@@ -73,10 +73,16 @@ std::unique_ptr<Stmt> Parser::parseStatement() {
     if (match(TokenType::PRINT)) return parsePrintStmt();
     if (match(TokenType::FOR)) return parseForStmt();
     if (match(TokenType::IF)) return parseIfStmt();
+    if (match(TokenType::WHILE)) return parseWhileStmt();
     if (match(TokenType::FN)) return parseFunctionStmt();
     if (match(TokenType::RETURN)) return parseReturnStmt();
     if (match(TokenType::SAVE)) return parseSaveStmt();
     if (match(TokenType::BACKWARD)) return parseBackwardStmt();
+    if (check(TokenType::IDENTIFIER)) {
+        // Need to differentiate between assignment `a = 1` and expression statement (if supported)
+        // Since we only support specific statements, let's assume an identifier starting a line is an assignment
+        return parseAssignStmt();
+    }
     
     // As a fallback, we might have an expression statement (not fully supported by original parser unless it was LET, but let's allow it maybe? No, let's stick to explicitly handled stmts)
     throw std::runtime_error("Unknown statement starting with: " + peek().text);
@@ -142,11 +148,24 @@ std::unique_ptr<ForStmt> Parser::parseForStmt() {
     return std::make_unique<ForStmt>(loopVar.text, (int)startVal.numberValue, (int)endVal.numberValue, std::move(body));
 }
 
+std::unique_ptr<WhileStmt> Parser::parseWhileStmt() {
+    std::unique_ptr<Expr> condition = parseExpression();
+    std::vector<std::unique_ptr<Stmt>> body = parseBlock();
+    return std::make_unique<WhileStmt>(std::move(condition), std::move(body));
+}
+
 std::unique_ptr<LetStmt> Parser::parseLetStmt() {
     Token name = consume(TokenType::IDENTIFIER, "Expect variable name after 'let'.");
     consume(TokenType::EQUALS, "Expect '=' after variable name.");
     std::unique_ptr<Expr> initializer = parseExpression();
     return std::make_unique<LetStmt>(name.text, std::move(initializer));
+}
+
+std::unique_ptr<AssignStmt> Parser::parseAssignStmt() {
+    Token name = consume(TokenType::IDENTIFIER, "Expect variable name for assignment.");
+    consume(TokenType::EQUALS, "Expect '=' after variable name.");
+    std::unique_ptr<Expr> value = parseExpression();
+    return std::make_unique<AssignStmt>(name.text, std::move(value));
 }
 
 std::unique_ptr<PrintStmt> Parser::parsePrintStmt() {
@@ -197,20 +216,32 @@ std::unique_ptr<Expr> Parser::parseFactor() {
 
 std::unique_ptr<Expr> Parser::parseCall() {
     std::unique_ptr<Expr> expr = parsePrimary();
-    
     // For function calls like `my_func(a, b)`
-    if (check(TokenType::LPAREN)) {
-        if (auto varExpr = dynamic_cast<VariableExpr*>(expr.get())) {
-            std::string callee = varExpr->name;
-            consume(TokenType::LPAREN, "Expect '(' after function name.");
-            std::vector<std::unique_ptr<Expr>> args;
-            if (!check(TokenType::RPAREN)) {
-                do {
-                    args.push_back(parseExpression());
-                } while (match(TokenType::COMMA));
+    while (true) {
+        if (check(TokenType::LPAREN)) {
+            if (auto varExpr = dynamic_cast<VariableExpr*>(expr.get())) {
+                std::string callee = varExpr->name;
+                consume(TokenType::LPAREN, "Expect '(' after function name.");
+                std::vector<std::unique_ptr<Expr>> args;
+                if (!check(TokenType::RPAREN)) {
+                    do {
+                        args.push_back(parseExpression());
+                    } while (match(TokenType::COMMA));
+                }
+                consume(TokenType::RPAREN, "Expect ')' after arguments.");
+                expr = std::make_unique<CallExpr>(callee, std::move(args));
+            } else {
+                break;
             }
-            consume(TokenType::RPAREN, "Expect ')' after arguments.");
-            return std::make_unique<CallExpr>(callee, std::move(args));
+        } else if (match(TokenType::DOT)) {
+            Token name = consume(TokenType::IDENTIFIER, "Expect property name after '.'.");
+            expr = std::make_unique<PropertyGetExpr>(std::move(expr), name.text);
+        } else if (match(TokenType::LBRACKET)) {
+            std::unique_ptr<Expr> index = parseExpression();
+            consume(TokenType::RBRACKET, "Expect ']' after index.");
+            expr = std::make_unique<IndexExpr>(std::move(expr), std::move(index));
+        } else {
+            break;
         }
     }
     
@@ -227,6 +258,8 @@ std::unique_ptr<Expr> Parser::parsePrimary() {
     if (match(TokenType::SOFTMAX)) return parseSoftmaxExpr();
     if (match(TokenType::TRANSPOSE)) return parseTransposeExpr();
     if (match(TokenType::LOAD)) return parseLoadExpr();
+    if (match(TokenType::RANDOM_MATRIX)) return parseRandomMatrixExpr();
+    if (match(TokenType::LOAD_CSV)) return parseLoadCSVExpr();
     if (match(TokenType::IDENTIFIER)) return std::make_unique<VariableExpr>(previous().text);
     if (match(TokenType::LPAREN)) {
         std::unique_ptr<Expr> expr = parseExpression();
@@ -310,6 +343,22 @@ std::unique_ptr<LoadExpr> Parser::parseLoadExpr() {
     Token filename = consume(TokenType::STRING, "Expect string filename after Load.");
     consume(TokenType::RPAREN, "Expect ')' after Load arguments.");
     return std::make_unique<LoadExpr>(filename.text);
+}
+
+std::unique_ptr<RandomMatrixExpr> Parser::parseRandomMatrixExpr() {
+    consume(TokenType::LPAREN, "Expect '(' after 'RandomMatrix'.");
+    std::unique_ptr<Expr> rows = parseExpression();
+    consume(TokenType::COMMA, "Expect ',' between RandomMatrix arguments.");
+    std::unique_ptr<Expr> cols = parseExpression();
+    consume(TokenType::RPAREN, "Expect ')' after RandomMatrix arguments.");
+    return std::make_unique<RandomMatrixExpr>(std::move(rows), std::move(cols));
+}
+
+std::unique_ptr<LoadCSVExpr> Parser::parseLoadCSVExpr() {
+    consume(TokenType::LPAREN, "Expect '(' after 'LoadCSV'.");
+    Token filename = consume(TokenType::STRING, "Expect string filename after LoadCSV.");
+    consume(TokenType::RPAREN, "Expect ')' after LoadCSV arguments.");
+    return std::make_unique<LoadCSVExpr>(filename.text);
 }
 
 } // namespace tnsr

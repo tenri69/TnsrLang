@@ -42,6 +42,9 @@ enum class TokenType {
     SAVE,
     LOAD,
     BACKWARD,
+    RANDOM_MATRIX,
+    LOAD_CSV,
+    WHILE,
     IDENTIFIER,
     NUMBER,
     STRING, // For print statements like Print("Hello")
@@ -58,6 +61,7 @@ enum class TokenType {
     LESS,
     GREATER,
     COMMA,
+    DOT,
     END_OF_FILE,
     UNKNOWN
 };

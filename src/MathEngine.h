@@ -62,7 +62,10 @@ public:
 
     Tensor operator+(const Tensor& other) const;
     Tensor operator-(const Tensor& other) const;
+    Tensor operator*(const Tensor& other) const; // Element-wise multiplication
     Tensor operator*(double scalar) const;
+
+    Tensor get_row(size_t index) const;
 
     void print(std::ostream& out = std::cout) const;
     void print_grad(std::ostream& out = std::cout) const;
@@ -77,5 +80,7 @@ Tensor Transpose(const Tensor& a);
 
 void SaveTensor(const Tensor& t, const std::string& filename);
 Tensor LoadTensor(const std::string& filename);
+Tensor LoadCSV(const std::string& filename);
+Tensor RandomMatrix(size_t rows, size_t cols);
 
 } // namespace tnsr

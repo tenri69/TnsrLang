@@ -20,7 +20,9 @@
 #include <algorithm>
 #include <cmath>
 #include <fstream>
+#include <sstream>
 #include <set>
+#include <random>
 
 namespace tnsr {
 
@@ -95,6 +97,29 @@ Tensor Tensor::operator-(const Tensor& other) const {
     return out;
 }
 
+Tensor Tensor::operator*(const Tensor& other) const {
+    if (impl->rows != other.impl->rows || impl->cols != other.impl->cols) {
+        throw std::invalid_argument("Dimensions must match for element-wise multiplication");
+    }
+    Tensor out(impl->rows, impl->cols);
+    for (size_t i = 0; i < impl->data.size(); ++i) {
+        out.impl->data[i] = impl->data[i] * other.impl->data[i];
+    }
+    
+    auto a = impl;
+    auto b = other.impl;
+    auto o = out.impl;
+    
+    o->parents = {a, b};
+    o->backward_op = [a, b, o]() {
+        for (size_t i = 0; i < o->grad.size(); ++i) {
+            a->grad[i] += b->data[i] * o->grad[i];
+            b->grad[i] += a->data[i] * o->grad[i];
+        }
+    };
+    return out;
+}
+
 Tensor Tensor::operator*(double scalar) const {
     Tensor out(impl->rows, impl->cols);
     for (size_t i = 0; i < impl->data.size(); ++i) {
@@ -108,6 +133,27 @@ Tensor Tensor::operator*(double scalar) const {
     o->backward_op = [a, o, scalar]() {
         for (size_t i = 0; i < o->grad.size(); ++i) {
             a->grad[i] += scalar * o->grad[i];
+        }
+    };
+    return out;
+}
+
+Tensor Tensor::get_row(size_t index) const {
+    if (index >= impl->rows) {
+        throw std::out_of_range("Row index out of bounds");
+    }
+    Tensor out(1, impl->cols);
+    for (size_t c = 0; c < impl->cols; ++c) {
+        out.impl->data[c] = get(index, c);
+    }
+    
+    auto a = impl;
+    auto o = out.impl;
+    
+    o->parents = {a};
+    o->backward_op = [a, o, index]() {
+        for (size_t c = 0; c < o->cols; ++c) {
+            a->grad[index * a->cols + c] += o->grad[c];
         }
     };
     return out;
@@ -300,6 +346,54 @@ Tensor LoadTensor(const std::string& filename) {
         file >> vals[i];
     }
     return Tensor(r, c, vals);
+}
+
+Tensor LoadCSV(const std::string& filename) {
+    std::ifstream file(filename);
+    if (!file.is_open()) {
+        throw std::runtime_error("Could not open CSV file: " + filename);
+    }
+    
+    std::vector<double> values;
+    std::string line;
+    size_t rows = 0;
+    size_t cols = 0;
+    
+    while (std::getline(file, line)) {
+        std::stringstream ss(line);
+        std::string cell;
+        size_t current_cols = 0;
+        
+        while (std::getline(ss, cell, ',')) {
+            // Trim whitespace
+            cell.erase(0, cell.find_first_not_of(" \t\r\n"));
+            cell.erase(cell.find_last_not_of(" \t\r\n") + 1);
+            if (!cell.empty()) {
+                values.push_back(std::stod(cell));
+                current_cols++;
+            }
+        }
+        
+        if (current_cols > 0) {
+            if (rows == 0) cols = current_cols;
+            else if (current_cols != cols) throw std::runtime_error("CSV rows have inconsistent column counts");
+            rows++;
+        }
+    }
+    
+    return Tensor(rows, cols, values);
+}
+
+Tensor RandomMatrix(size_t rows, size_t cols) {
+    static std::random_device rd;
+    static std::mt19937 gen(rd());
+    std::normal_distribution<double> d(0.0, 0.1);
+    
+    std::vector<double> vals(rows * cols);
+    for (size_t i = 0; i < vals.size(); ++i) {
+        vals[i] = d(gen);
+    }
+    return Tensor(rows, cols, vals);
 }
 
 } // namespace tnsr

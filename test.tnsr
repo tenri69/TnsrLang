@@ -1,0 +1,21 @@
+let w = RandomMatrix(2, 2)
+let lr = 0.01
+
+Print("Initial weights:")
+Print(w)
+
+let i = 0
+while i < 3 {
+    let loss = DotProduct(w, w)
+    backward(loss)
+    
+    // Gradient descent step
+    let w_new = w - w.grad * lr
+    w = w_new
+    
+    let next_i = i + 1
+    i = next_i
+}
+
+Print("Updated weights:")
+Print(w)

@@ -116,6 +116,37 @@ public:
     void accept(ASTVisitor& visitor) override;
 };
 
+class RandomMatrixExpr : public Expr {
+public:
+    std::unique_ptr<Expr> rows;
+    std::unique_ptr<Expr> cols;
+    RandomMatrixExpr(std::unique_ptr<Expr> r, std::unique_ptr<Expr> c) : rows(std::move(r)), cols(std::move(c)) {}
+    void accept(ASTVisitor& visitor) override;
+};
+
+class LoadCSVExpr : public Expr {
+public:
+    std::string filename;
+    LoadCSVExpr(const std::string& filename) : filename(filename) {}
+    void accept(ASTVisitor& visitor) override;
+};
+
+class PropertyGetExpr : public Expr {
+public:
+    std::unique_ptr<Expr> object;
+    std::string name;
+    PropertyGetExpr(std::unique_ptr<Expr> obj, const std::string& name) : object(std::move(obj)), name(name) {}
+    void accept(ASTVisitor& visitor) override;
+};
+
+class IndexExpr : public Expr {
+public:
+    std::unique_ptr<Expr> object;
+    std::unique_ptr<Expr> index;
+    IndexExpr(std::unique_ptr<Expr> obj, std::unique_ptr<Expr> idx) : object(std::move(obj)), index(std::move(idx)) {}
+    void accept(ASTVisitor& visitor) override;
+};
+
 class BinaryExpr : public Expr {
 public:
     std::unique_ptr<Expr> left;
@@ -132,6 +163,14 @@ public:
     std::string name;
     std::unique_ptr<Expr> initializer;
     LetStmt(const std::string& name, std::unique_ptr<Expr> init) : name(name), initializer(std::move(init)) {}
+    void accept(ASTVisitor& visitor) override;
+};
+
+class AssignStmt : public Stmt {
+public:
+    std::string name;
+    std::unique_ptr<Expr> value;
+    AssignStmt(const std::string& name, std::unique_ptr<Expr> val) : name(name), value(std::move(val)) {}
     void accept(ASTVisitor& visitor) override;
 };
 
@@ -155,6 +194,16 @@ public:
     
     ForStmt(const std::string& var, int start, int end, std::vector<std::unique_ptr<Stmt>> body)
         : loopVar(var), startVal(start), endVal(end), body(std::move(body)) {}
+    void accept(ASTVisitor& visitor) override;
+};
+
+class WhileStmt : public Stmt {
+public:
+    std::unique_ptr<Expr> condition;
+    std::vector<std::unique_ptr<Stmt>> body;
+    
+    WhileStmt(std::unique_ptr<Expr> condition, std::vector<std::unique_ptr<Stmt>> body)
+        : condition(std::move(condition)), body(std::move(body)) {}
     void accept(ASTVisitor& visitor) override;
 };
 
@@ -216,10 +265,16 @@ public:
     virtual void visit(TransposeExpr& expr) = 0;
     virtual void visit(CallExpr& expr) = 0;
     virtual void visit(LoadExpr& expr) = 0;
+    virtual void visit(RandomMatrixExpr& expr) = 0;
+    virtual void visit(LoadCSVExpr& expr) = 0;
+    virtual void visit(PropertyGetExpr& expr) = 0;
+    virtual void visit(IndexExpr& expr) = 0;
     virtual void visit(BinaryExpr& expr) = 0;
     virtual void visit(LetStmt& stmt) = 0;
+    virtual void visit(AssignStmt& stmt) = 0;
     virtual void visit(PrintStmt& stmt) = 0;
     virtual void visit(ForStmt& stmt) = 0;
+    virtual void visit(WhileStmt& stmt) = 0;
     virtual void visit(IfStmt& stmt) = 0;
     virtual void visit(FunctionStmt& stmt) = 0;
     virtual void visit(ReturnStmt& stmt) = 0;

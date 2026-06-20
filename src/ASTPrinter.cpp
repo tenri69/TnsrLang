@@ -157,6 +157,15 @@ void ASTPrinter::visit(LetStmt& stmt) {
     currentId = id;
 }
 
+void ASTPrinter::visit(AssignStmt& stmt) {
+    int id = pushNode("Assign: " + stmt.name);
+    
+    stmt.value->accept(*this);
+    link(id, currentId);
+    
+    currentId = id;
+}
+
 void ASTPrinter::visit(PrintStmt& stmt) {
     int id = pushNode("Print");
     
@@ -200,6 +209,26 @@ void ASTPrinter::visit(SaveStmt& stmt) {
 
 void ASTPrinter::visit(BackwardStmt& stmt) {
     currentId = pushNode("BackwardStmt");
+}
+
+void ASTPrinter::visit(RandomMatrixExpr& expr) {
+    currentId = pushNode("RandomMatrix");
+}
+
+void ASTPrinter::visit(LoadCSVExpr& expr) {
+    currentId = pushNode("LoadCSV: " + expr.filename);
+}
+
+void ASTPrinter::visit(PropertyGetExpr& expr) {
+    currentId = pushNode("Property: ." + expr.name);
+}
+
+void ASTPrinter::visit(IndexExpr& expr) {
+    currentId = pushNode("Index");
+}
+
+void ASTPrinter::visit(WhileStmt& stmt) {
+    currentId = pushNode("WhileStmt");
 }
 
 } // namespace tnsr

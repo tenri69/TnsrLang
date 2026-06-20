@@ -113,7 +113,7 @@ void Evaluator::visit(BinaryExpr& expr) {
         } else if (right.impl->rows == 1 && right.impl->cols == 1) {
             lastValue = left * right.get(0, 0);
         } else {
-            throw std::runtime_error("Scalar multiplication requires one operand to be a scalar (1x1 Tensor)");
+            lastValue = left * right; // Element-wise multiplication
         }
     } else if (expr.op == TokenType::LESS) {
         lastValue = Tensor(1, 1, {left.get(0, 0) < right.get(0, 0) ? 1.0 : 0.0});
@@ -144,8 +144,38 @@ void Evaluator::visit(CallExpr& expr) {
     lastValue = Tensor(1, 1, {0.0});
 }
 
+void Evaluator::visit(RandomMatrixExpr& expr) {
+    Tensor rows = evaluate(*expr.rows);
+    Tensor cols = evaluate(*expr.cols);
+    lastValue = RandomMatrix((size_t)rows.get(0,0), (size_t)cols.get(0,0));
+}
+
+void Evaluator::visit(LoadCSVExpr& expr) {
+    lastValue = LoadCSV(expr.filename);
+}
+
+void Evaluator::visit(PropertyGetExpr& expr) {
+    Tensor obj = evaluate(*expr.object);
+    if (expr.name == "grad") {
+        lastValue = Tensor(obj.impl->rows, obj.impl->cols, obj.impl->grad);
+    } else {
+        throw std::runtime_error("Unknown property: " + expr.name);
+    }
+}
+
+void Evaluator::visit(IndexExpr& expr) {
+    Tensor obj = evaluate(*expr.object);
+    Tensor index = evaluate(*expr.index);
+    lastValue = obj.get_row((size_t)index.get(0,0));
+}
+
 void Evaluator::visit(LetStmt& stmt) {
     Tensor value = evaluate(*stmt.initializer);
+    environment->define(stmt.name, value);
+}
+
+void Evaluator::visit(AssignStmt& stmt) {
+    Tensor value = evaluate(*stmt.value);
     environment->define(stmt.name, value);
 }
 
@@ -162,6 +192,13 @@ void Evaluator::visit(ForStmt& stmt) {
     for (int i = stmt.startVal; i <= stmt.endVal; ++i) {
         Environment localEnv(environment);
         localEnv.define(stmt.loopVar, Tensor(1, 1, {(double)i}));
+        executeBlock(stmt.body, &localEnv);
+    }
+}
+
+void Evaluator::visit(WhileStmt& stmt) {
+    while (evaluate(*stmt.condition).get(0, 0) != 0.0) {
+        Environment localEnv(environment);
         executeBlock(stmt.body, &localEnv);
     }
 }

@@ -33,6 +33,7 @@ void CallExpr::accept(ASTVisitor& visitor) { visitor.visit(*this); }
 void LoadExpr::accept(ASTVisitor& visitor) { visitor.visit(*this); }
 void BinaryExpr::accept(ASTVisitor& visitor) { visitor.visit(*this); }
 void LetStmt::accept(ASTVisitor& visitor) { visitor.visit(*this); }
+void AssignStmt::accept(ASTVisitor& visitor) { visitor.visit(*this); }
 void PrintStmt::accept(ASTVisitor& visitor) { visitor.visit(*this); }
 void ForStmt::accept(ASTVisitor& visitor) { visitor.visit(*this); }
 void IfStmt::accept(ASTVisitor& visitor) { visitor.visit(*this); }
@@ -40,5 +41,9 @@ void FunctionStmt::accept(ASTVisitor& visitor) { visitor.visit(*this); }
 void ReturnStmt::accept(ASTVisitor& visitor) { visitor.visit(*this); }
 void SaveStmt::accept(ASTVisitor& visitor) { visitor.visit(*this); }
 void BackwardStmt::accept(ASTVisitor& visitor) { visitor.visit(*this); }
-
+void RandomMatrixExpr::accept(ASTVisitor& visitor) { visitor.visit(*this); }
+void LoadCSVExpr::accept(ASTVisitor& visitor) { visitor.visit(*this); }
+void PropertyGetExpr::accept(ASTVisitor& visitor) { visitor.visit(*this); }
+void IndexExpr::accept(ASTVisitor& visitor) { visitor.visit(*this); }
+void WhileStmt::accept(ASTVisitor& visitor) { visitor.visit(*this); }
 } // namespace tnsr

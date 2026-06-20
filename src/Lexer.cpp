@@ -87,6 +87,9 @@ Token Lexer::identifierOrKeyword() {
     else if (text == "Save") type = TokenType::SAVE;
     else if (text == "Load") type = TokenType::LOAD;
     else if (text == "backward") type = TokenType::BACKWARD;
+    else if (text == "RandomMatrix") type = TokenType::RANDOM_MATRIX;
+    else if (text == "LoadCSV") type = TokenType::LOAD_CSV;
+    else if (text == "while") type = TokenType::WHILE;
     
     return Token{type, text, 0.0};
 }
@@ -139,6 +142,7 @@ std::vector<Token> Lexer::tokenize() {
                 case '<': tokens.push_back(Token{TokenType::LESS, "<", 0}); break;
                 case '>': tokens.push_back(Token{TokenType::GREATER, ">", 0}); break;
                 case ',': tokens.push_back(Token{TokenType::COMMA, ",", 0}); break;
+                case '.': tokens.push_back(Token{TokenType::DOT, ".", 0}); break;
                 default:
                     throw std::runtime_error("Unexpected character: " + std::string(1, c));
             }

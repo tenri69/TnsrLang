@@ -45,10 +45,16 @@ public:
     void visit(TransposeExpr& expr) override;
     void visit(CallExpr& expr) override;
     void visit(LoadExpr& expr) override;
+    void visit(RandomMatrixExpr& expr) override;
+    void visit(LoadCSVExpr& expr) override;
+    void visit(PropertyGetExpr& expr) override;
+    void visit(IndexExpr& expr) override;
     void visit(BinaryExpr& expr) override;
     void visit(LetStmt& stmt) override;
+    void visit(AssignStmt& stmt) override;
     void visit(PrintStmt& stmt) override;
     void visit(ForStmt& stmt) override;
+    void visit(WhileStmt& stmt) override;
     void visit(IfStmt& stmt) override;
     void visit(FunctionStmt& stmt) override;
     void visit(ReturnStmt& stmt) override;

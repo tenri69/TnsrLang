@@ -179,32 +179,35 @@ const std::string HTML_CONTENT = R"HTML(<!DOCTYPE html>
     <div class="container">
         <div class="pane editor-pane">
             <div class="pane-title">C:\> type script.tnsr</div>
-            <textarea id="code" spellcheck="false">// Advanced Neural Network in TnsrLang v2.0
-// Now with Functions, Conditionals, and Sigmoid!
+            <textarea id="code" spellcheck="false">// Usability Expansion: TnsrLang v3.0
+// Random Matrix Init, While Loops, & AutoGrad properties!
 
 let input = Vector([1.0, 2.0])
 let target = Vector([5.0])
-let weights = Matrix(1, 2, [0.1, 0.2])
-let lr = 0.5 // Higher learning rate for Sigmoid
+let weights = RandomMatrix(1, 2)
+let lr = 0.05 
 
 fn predict(w, x) {
     let raw = DotProduct(w, x)
-    return Sigmoid(raw)
+    return ReLU(raw)
 }
 
 Print("Initial weights:")
 Print(weights)
 
-for i = 1 to 20 {
+let i = 0
+while i < 15 {
     let pred = predict(weights, input)
     let error = pred - target
+    let loss = DotProduct(error, Transpose(error))
     
-    if error < 0.001 {
-        // We converged!
-    } else {
-        let grad = DotProduct(error, Transpose(input))
-        let weights = weights - grad * lr
-    }
+    // Magic: Automatic Differentiation!
+    backward(loss)
+    
+    // Access gradients directly and update weights (Gradient Descent)
+    weights = weights - weights.grad * lr
+    
+    i = i + 1
 }
 
 Print("Final prediction:")

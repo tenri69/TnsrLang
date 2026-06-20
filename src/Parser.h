@@ -45,8 +45,10 @@ private:
     
     std::unique_ptr<Stmt> parseStatement();
     std::unique_ptr<LetStmt> parseLetStmt();
+    std::unique_ptr<AssignStmt> parseAssignStmt();
     std::unique_ptr<PrintStmt> parsePrintStmt();
     std::unique_ptr<ForStmt> parseForStmt();
+    std::unique_ptr<WhileStmt> parseWhileStmt();
     std::unique_ptr<IfStmt> parseIfStmt();
     std::unique_ptr<FunctionStmt> parseFunctionStmt();
     std::unique_ptr<ReturnStmt> parseReturnStmt();
@@ -68,6 +70,8 @@ private:
     std::unique_ptr<SoftmaxExpr> parseSoftmaxExpr();
     std::unique_ptr<TransposeExpr> parseTransposeExpr();
     std::unique_ptr<LoadExpr> parseLoadExpr();
+    std::unique_ptr<RandomMatrixExpr> parseRandomMatrixExpr();
+    std::unique_ptr<LoadCSVExpr> parseLoadCSVExpr();
     
     std::vector<double> parseNumberArray();
 };
