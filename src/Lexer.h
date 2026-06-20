@@ -23,6 +23,9 @@
 
 namespace tnsr {
 
+/**
+ * @brief Defines all possible token types in the TnsrLang syntax.
+ */
 enum class TokenType {
     LET,
     VECTOR,
@@ -60,12 +63,19 @@ enum class TokenType {
     UNKNOWN
 };
 
+/**
+ * @brief Represents a single lexical token parsed from the source code.
+ */
 struct Token {
     TokenType type;
     std::string text;
-    double numberValue; // Only valid if type == NUMBER
+    double numberValue; // Populated only if type is TokenType::NUMBER
 };
 
+/**
+ * @brief The Lexer takes a raw string of source code and converts it into a stream of Tokens.
+ * This is the first stage of the TnsrLang compiler pipeline.
+ */
 class Lexer {
 public:
     Lexer(const std::string& source);

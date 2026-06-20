@@ -24,6 +24,10 @@
 
 namespace tnsr {
 
+/**
+ * @brief The Parser converts a stream of Tokens into an Abstract Syntax Tree (AST).
+ * It uses a Recursive Descent approach, meaning each grammar rule has a corresponding method.
+ */
 class Parser {
 public:
     Parser(const std::vector<Token>& tokens);

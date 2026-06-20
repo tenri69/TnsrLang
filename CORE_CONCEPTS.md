@@ -6,16 +6,16 @@ Welcome to **TnsrLang**! If you are new to machine learning, neural networks, or
 
 ## 1. What is a Tensor?
 
-In machine learning, a **Tensor** is a generalization of numbers and arrays to an arbitrary number of dimensions.
+In machine learning, a **Tensor** is a generalization of numbers and arrays to an arbitrary number of dimensions. TnsrLang's core engine uses a dynamic `shape` vector to represent these.
 
-* **Scalar (0-Dimensional Tensor):** A single number. Example: `5.0`. In TnsrLang, this is represented internally as a 1x1 Matrix.
-* **Vector (1-Dimensional Tensor):** An array of numbers. Think of it as a point in space or a list of features. Example: `[1.0, 2.0, 3.0]`. In TnsrLang, this is a column vector (an N x 1 Matrix).
+* **Scalar (0-Dimensional Tensor):** A single number. Example: `5.0`.
+* **Vector (1-Dimensional Tensor):** An array of numbers. Think of it as a point in space or a list of features. Example: `[1.0, 2.0, 3.0]`. 
 * **Matrix (2-Dimensional Tensor):** A grid of numbers with rows and columns. Matrices are used to hold the "weights" of our neural networks. Example:
   ```
   [ 0.1, 0.2 ]
   [ 0.3, 0.4 ]
   ```
-* **Higher-Dimensional Tensors:** Used for things like color images (Width x Height x RGB), though TnsrLang currently focuses on 2D matrices for simplicity.
+* **Higher-Dimensional Tensors:** Used for things like color images (Width x Height x RGB) or batches of data. Example: a 4D tensor `[32, 256, 256, 3]` represents 32 images of 256x256 pixels with 3 color channels.
 
 ---
 
@@ -72,10 +72,10 @@ If you are a contributor looking at the C++ code, here is how the concepts map t
 
 1. **`Tensor` & `TensorImpl` (MathEngine.h)**
    * To support the computational graph, `Tensor` is just a lightweight wrapper around a `std::shared_ptr<TensorImpl>`. 
-   * `TensorImpl` holds the actual `std::vector<double> data`, the `std::vector<double> grad`, and a list of `std::shared_ptr<TensorImpl>` pointing to its parents.
+   * `TensorImpl` holds the actual `std::vector<double> data` (flattened N-D array), a `std::vector<size_t> shape`, the `std::vector<double> grad`, and a list of `std::shared_ptr<TensorImpl>` pointing to its parents.
 2. **`backward_op` (MathEngine.cpp)**
    * Every math function (like `DotProduct` or `Sigmoid`) assigns a `backward_op` lambda function to the resulting tensor. This lambda contains the exact calculus derivative for that specific operation.
-3. **`backward()`**
-   * When triggered, it performs a topological sort of all parent tensors, ensuring gradients are computed in the correct order (from output back to inputs) and calls each `backward_op`.
+3. **The Standard Library (Evaluator.cpp)**
+   * TnsrLang's compiler (Lexer/Parser) has no hardcoded knowledge of AI. Instead, AI math functions are injected into the global environment as Native C++ Functions. This decouples the language from the math engine, allowing the engine to be easily upgraded to GPU acceleration.
 
 Welcome to the cutting edge of brutalist neural network programming!

@@ -18,8 +18,8 @@ Instead of hiding the math behind massive library abstractions, TnsrLang provide
 ## Key Features
 
 * **AutoGrad Engine**: Built-in computational graph that tracks operations. Simply call `backward(loss)` and the engine automatically computes gradients for all linked tensors!
-* **Matrix & Vector Math**: Native support for high-performance tensor operations including `DotProduct` and `Transpose`.
-* **Neural Network Primitives**: Built-in activation functions like `ReLU`, `Sigmoid`, and `Softmax`.
+* **N-Dimensional Tensors**: Core engine supports multi-dimensional tensors (`shape`), ready for batches and complex data structures.
+* **Math Standard Library**: High-performance tensor operations (`DotProduct`, `Transpose`) and activation functions (`ReLU`, `Sigmoid`) exposed as Native C++ Functions, entirely decoupled from the compiler.
 * **Lexical Scoping & Functions**: Create modular layers using custom `fn` blocks with local variable scoping.
 * **Integrated Web Terminal**: Comes with an embedded C++ HTTP server (`httplib`) that serves a brutalist, interactive browser terminal for writing code and visualizing network architectures in real-time ASCII.
 * **Model Persistence**: Native `Save()` and `Load()` capabilities to store trained weights to disk.

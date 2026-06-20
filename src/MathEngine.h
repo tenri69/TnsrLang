@@ -27,6 +27,10 @@
 
 namespace tnsr {
 
+/**
+ * @brief TensorImpl is the core data structure holding N-Dimensional tensor data.
+ * It manages the forward data, the gradients for backpropagation, and the computation graph.
+ */
 struct TensorImpl {
     std::vector<size_t> shape;
     std::vector<double> data;
@@ -56,6 +60,12 @@ struct TensorImpl {
     }
 };
 
+/**
+ * @brief Tensor is a lightweight wrapper around std::shared_ptr<TensorImpl>.
+ * It acts as the primary interface for all mathematical operations and AutoGrad.
+ * Using a shared_ptr ensures that the computation graph stays alive as long as 
+ * any tensor references it.
+ */
 class Tensor {
 public:
     std::shared_ptr<TensorImpl> impl;
@@ -88,8 +98,19 @@ public:
     void backward();
 };
 
+/**
+ * @brief Performs Matrix Multiplication (or batched dot product) between two tensors.
+ */
 Tensor DotProduct(const Tensor& a, const Tensor& b);
+
+/**
+ * @brief Rectified Linear Unit activation function. f(x) = max(0, x)
+ */
 Tensor ReLU(const Tensor& a);
+
+/**
+ * @brief Sigmoid activation function. f(x) = 1 / (1 + e^-x)
+ */
 Tensor Sigmoid(const Tensor& a);
 Tensor Softmax(const Tensor& a);
 Tensor Transpose(const Tensor& a);

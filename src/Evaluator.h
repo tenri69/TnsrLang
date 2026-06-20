@@ -26,12 +26,20 @@
 
 namespace tnsr {
 
+/**
+ * @brief Exception thrown when a 'return' statement is executed inside a function.
+ * This acts as a control-flow jump to exit the function block early.
+ */
 class ReturnException : public std::exception {
 public:
     Tensor value;
-    ReturnException(Tensor val) : value(val) {}
+    ReturnException(Tensor v) : value(v) {}
 };
 
+/**
+ * @brief Environment holds the variables, functions, and native C++ functions for a given scope.
+ * Scopes can be nested (e.g., inside an 'if' or 'fn' block), creating a chain of enclosing environments.
+ */
 class Environment {
 public:
     std::unordered_map<std::string, Tensor> values;
@@ -87,6 +95,10 @@ public:
     }
 };
 
+/**
+ * @brief The Evaluator traverses the AST and executes the code.
+ * It manages the global Environment and acts as the bridge between the TnsrLang syntax and the C++ MathEngine.
+ */
 class Evaluator : public ASTVisitor {
 public:
     Evaluator(std::ostream& out = std::cout);

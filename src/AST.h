@@ -27,12 +27,18 @@ namespace tnsr {
 
 class ASTVisitor;
 
+/**
+ * @brief Base class for all Abstract Syntax Tree (AST) nodes.
+ */
 class ASTNode {
 public:
     virtual ~ASTNode() = default;
     virtual void accept(ASTVisitor& visitor) = 0;
 };
 
+/**
+ * @brief Base class for expressions (nodes that evaluate to a value).
+ */
 class Expr : public ASTNode {};
 
 class NumberExpr : public Expr {
@@ -209,6 +215,10 @@ public:
     void accept(ASTVisitor& visitor) override;
 };
 
+/**
+ * @brief The ASTVisitor interface implements the Visitor design pattern.
+ * It allows us to separate operations (like Printing or Evaluating) from the AST nodes themselves.
+ */
 class ASTVisitor {
 public:
     virtual ~ASTVisitor() = default;

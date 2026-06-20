@@ -1,6 +1,6 @@
 # TnsrLang: Future Integrations & Scaling Roadmap
 
-Detta dokument fungerar som en vision för framtiden. Eftersom vi redan har etablerat en fullfjädrad AutoGrad-motor (automatisk differentiering) som löser de tunga matematiska problemen, är nästa evolutionära steg att anpassa språket för hastighet, kompatibilitet och skala.
+Detta dokument fungerar som en vision för framtiden. Eftersom vi nyligen slutförde **Arkitektur-rensningen (v4.1)** där all matematik frikopplades från kompilatorn och Tensor-kärnan gjordes N-dimensionell, är grunden nu perfekt lagd. Nästa evolutionära steg är att anpassa språket för extrem hastighet, kompatibilitet och skala.
 
 ---
 
@@ -41,4 +41,4 @@ När man bygger ett spel i C++ (ex. Unreal Engine) är det ofta omöjligt eller 
 Vår optimerade `MathEngine` och `Evaluator` kan packas ner till en pytteliten C++-komponent som ger spelutvecklare en fullfjädrad maskininlärningsmotor på några kilobyte. 
 
 ## Sammanfattning
-Med dessa tre steg går vi från TnsrLang v4.0 till att vara en respekterad utmanare inom "Micro-frameworks" för AI, som JAX eller LibTorch, fast med en unik, lättläst syntax som är perfekt skräddarsydd för utbildning och integrering.
+Med den nyligen slutförda arkitektur-uppdateringen och dessa kommande integrationssteg, går TnsrLang från att vara ett utbildningsprojekt till att bli en respekterad utmanare inom "Micro-frameworks" för AI. Vi bygger ett ekosystem som kombinerar PyTorchs kraft med en brutalistisk, glasklar design.
