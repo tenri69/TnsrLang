@@ -36,6 +36,7 @@ class Environment {
 public:
     std::unordered_map<std::string, Tensor> values;
     std::unordered_map<std::string, FunctionStmt*> functions;
+    std::unordered_map<std::string, std::function<Tensor(const std::vector<Tensor>&)>> nativeFunctions;
     Environment* enclosing;
 
     Environment() : enclosing(nullptr) {}
@@ -67,6 +68,22 @@ public:
         if (functions.count(name)) return functions[name];
         if (enclosing) return enclosing->getFunc(name);
         throw std::runtime_error("Undefined function: " + name);
+    }
+    
+    void defineNative(const std::string& name, std::function<Tensor(const std::vector<Tensor>&)> func) {
+        nativeFunctions[name] = func;
+    }
+    
+    bool hasNative(const std::string& name) {
+        if (nativeFunctions.count(name)) return true;
+        if (enclosing) return enclosing->hasNative(name);
+        return false;
+    }
+    
+    std::function<Tensor(const std::vector<Tensor>&)> getNative(const std::string& name) {
+        if (nativeFunctions.count(name)) return nativeFunctions[name];
+        if (enclosing) return enclosing->getNative(name);
+        throw std::runtime_error("Undefined native function: " + name);
     }
 };
 

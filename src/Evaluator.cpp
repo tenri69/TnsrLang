@@ -22,7 +22,27 @@
 
 namespace tnsr {
 
-Evaluator::Evaluator(std::ostream& out) : out(out), environment(&globalEnv), lastValue(0, 0) {}
+Evaluator::Evaluator(std::ostream& out) : out(out), environment(&globalEnv), lastValue(0, 0) {
+    globalEnv.defineNative("MSELoss", [](const std::vector<Tensor>& args) {
+        if (args.size() != 2) throw std::runtime_error("MSELoss expects 2 arguments");
+        Tensor pred = args[0];
+        Tensor target = args[1];
+        Tensor error = pred - target;
+        Tensor loss = DotProduct(Transpose(error), error);
+        return loss * (1.0 / (pred.impl->rows * pred.impl->cols));
+    });
+
+    globalEnv.defineNative("SGD_Step", [](const std::vector<Tensor>& args) {
+        if (args.size() != 2) throw std::runtime_error("SGD_Step expects 2 arguments: (weights, learning_rate)");
+        Tensor w = args[0];
+        double lr = args[1].get(0, 0);
+        Tensor out(w.impl->rows, w.impl->cols);
+        for (size_t i = 0; i < out.impl->data.size(); ++i) {
+            out.impl->data[i] = w.impl->data[i] - w.impl->grad[i] * lr;
+        }
+        return out;
+    });
+}
 
 void Evaluator::evaluate(const std::vector<std::unique_ptr<Stmt>>& statements) {
     for (const auto& stmt : statements) {
@@ -125,14 +145,24 @@ void Evaluator::visit(BinaryExpr& expr) {
 }
 
 void Evaluator::visit(CallExpr& expr) {
+    std::vector<Tensor> evaluatedArgs;
+    for (const auto& arg : expr.arguments) {
+        evaluatedArgs.push_back(evaluate(*arg));
+    }
+
+    if (environment->hasNative(expr.callee)) {
+        lastValue = environment->getNative(expr.callee)(evaluatedArgs);
+        return;
+    }
+
     FunctionStmt* func = environment->getFunc(expr.callee);
     if (expr.arguments.size() != func->params.size()) {
         throw std::runtime_error("Expected " + std::to_string(func->params.size()) + " arguments but got " + std::to_string(expr.arguments.size()) + ".");
     }
     
     Environment localEnv(environment);
-    for (size_t i = 0; i < expr.arguments.size(); ++i) {
-        localEnv.define(func->params[i], evaluate(*expr.arguments[i]));
+    for (size_t i = 0; i < evaluatedArgs.size(); ++i) {
+        localEnv.define(func->params[i], evaluatedArgs[i]);
     }
     
     try {

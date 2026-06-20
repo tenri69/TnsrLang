@@ -52,49 +52,149 @@ void Tensor::backward() {
 }
 
 Tensor Tensor::operator+(const Tensor& other) const {
-    if (impl->rows != other.impl->rows || impl->cols != other.impl->cols) {
-        throw std::invalid_argument("Dimensions must match for addition");
-    }
-    Tensor out(impl->rows, impl->cols);
-    for (size_t i = 0; i < impl->data.size(); ++i) {
-        out.impl->data[i] = impl->data[i] + other.impl->data[i];
-    }
-    
-    auto a = impl;
-    auto b = other.impl;
-    auto o = out.impl;
-    
-    o->parents = {a, b};
-    o->backward_op = [a, b, o]() {
-        for (size_t i = 0; i < o->grad.size(); ++i) {
-            a->grad[i] += o->grad[i];
-            b->grad[i] += o->grad[i];
+    if (impl->rows == other.impl->rows && impl->cols == other.impl->cols) {
+        Tensor out(impl->rows, impl->cols);
+        for (size_t i = 0; i < impl->data.size(); ++i) {
+            out.impl->data[i] = impl->data[i] + other.impl->data[i];
         }
-    };
-    return out;
+        auto a = impl; auto b = other.impl; auto o = out.impl;
+        o->parents = {a, b};
+        o->backward_op = [a, b, o]() {
+            for (size_t i = 0; i < o->grad.size(); ++i) {
+                a->grad[i] += o->grad[i];
+                b->grad[i] += o->grad[i];
+            }
+        };
+        return out;
+    } else if (impl->cols == other.impl->cols && other.impl->rows == 1) {
+        // Broadcast across rows
+        Tensor out(impl->rows, impl->cols);
+        for (size_t r = 0; r < impl->rows; ++r) {
+            for (size_t c = 0; c < impl->cols; ++c) {
+                out.impl->data[r * impl->cols + c] = impl->data[r * impl->cols + c] + other.impl->data[c];
+            }
+        }
+        auto a = impl; auto b = other.impl; auto o = out.impl;
+        o->parents = {a, b};
+        o->backward_op = [a, b, o]() {
+            for (size_t r = 0; r < o->rows; ++r) {
+                for (size_t c = 0; c < o->cols; ++c) {
+                    a->grad[r * o->cols + c] += o->grad[r * o->cols + c];
+                    b->grad[c] += o->grad[r * o->cols + c];
+                }
+            }
+        };
+        return out;
+    } else if (impl->rows == other.impl->rows && other.impl->cols == 1) {
+        // Broadcast across columns
+        Tensor out(impl->rows, impl->cols);
+        for (size_t r = 0; r < impl->rows; ++r) {
+            for (size_t c = 0; c < impl->cols; ++c) {
+                out.impl->data[r * impl->cols + c] = impl->data[r * impl->cols + c] + other.impl->data[r];
+            }
+        }
+        auto a = impl; auto b = other.impl; auto o = out.impl;
+        o->parents = {a, b};
+        o->backward_op = [a, b, o]() {
+            for (size_t r = 0; r < o->rows; ++r) {
+                for (size_t c = 0; c < o->cols; ++c) {
+                    a->grad[r * o->cols + c] += o->grad[r * o->cols + c];
+                    b->grad[r] += o->grad[r * o->cols + c];
+                }
+            }
+        };
+        return out;
+    } else if (other.impl->rows == 1 && other.impl->cols == 1) {
+        // Scalar broadcasting
+        Tensor out(impl->rows, impl->cols);
+        for (size_t i = 0; i < impl->data.size(); ++i) {
+            out.impl->data[i] = impl->data[i] + other.impl->data[0];
+        }
+        auto a = impl; auto b = other.impl; auto o = out.impl;
+        o->parents = {a, b};
+        o->backward_op = [a, b, o]() {
+            for (size_t i = 0; i < o->grad.size(); ++i) {
+                a->grad[i] += o->grad[i];
+                b->grad[0] += o->grad[i];
+            }
+        };
+        return out;
+    }
+    
+    throw std::invalid_argument("Dimensions must match or be broadcastable for addition");
 }
 
 Tensor Tensor::operator-(const Tensor& other) const {
-    if (impl->rows != other.impl->rows || impl->cols != other.impl->cols) {
-        throw std::invalid_argument("Dimensions must match for subtraction");
-    }
-    Tensor out(impl->rows, impl->cols);
-    for (size_t i = 0; i < impl->data.size(); ++i) {
-        out.impl->data[i] = impl->data[i] - other.impl->data[i];
-    }
-    
-    auto a = impl;
-    auto b = other.impl;
-    auto o = out.impl;
-    
-    o->parents = {a, b};
-    o->backward_op = [a, b, o]() {
-        for (size_t i = 0; i < o->grad.size(); ++i) {
-            a->grad[i] += o->grad[i];
-            b->grad[i] -= o->grad[i];
+    if (impl->rows == other.impl->rows && impl->cols == other.impl->cols) {
+        Tensor out(impl->rows, impl->cols);
+        for (size_t i = 0; i < impl->data.size(); ++i) {
+            out.impl->data[i] = impl->data[i] - other.impl->data[i];
         }
-    };
-    return out;
+        auto a = impl; auto b = other.impl; auto o = out.impl;
+        o->parents = {a, b};
+        o->backward_op = [a, b, o]() {
+            for (size_t i = 0; i < o->grad.size(); ++i) {
+                a->grad[i] += o->grad[i];
+                b->grad[i] -= o->grad[i];
+            }
+        };
+        return out;
+    } else if (impl->cols == other.impl->cols && other.impl->rows == 1) {
+        // Broadcast across rows
+        Tensor out(impl->rows, impl->cols);
+        for (size_t r = 0; r < impl->rows; ++r) {
+            for (size_t c = 0; c < impl->cols; ++c) {
+                out.impl->data[r * impl->cols + c] = impl->data[r * impl->cols + c] - other.impl->data[c];
+            }
+        }
+        auto a = impl; auto b = other.impl; auto o = out.impl;
+        o->parents = {a, b};
+        o->backward_op = [a, b, o]() {
+            for (size_t r = 0; r < o->rows; ++r) {
+                for (size_t c = 0; c < o->cols; ++c) {
+                    a->grad[r * o->cols + c] += o->grad[r * o->cols + c];
+                    b->grad[c] -= o->grad[r * o->cols + c];
+                }
+            }
+        };
+        return out;
+    } else if (impl->rows == other.impl->rows && other.impl->cols == 1) {
+        // Broadcast across columns
+        Tensor out(impl->rows, impl->cols);
+        for (size_t r = 0; r < impl->rows; ++r) {
+            for (size_t c = 0; c < impl->cols; ++c) {
+                out.impl->data[r * impl->cols + c] = impl->data[r * impl->cols + c] - other.impl->data[r];
+            }
+        }
+        auto a = impl; auto b = other.impl; auto o = out.impl;
+        o->parents = {a, b};
+        o->backward_op = [a, b, o]() {
+            for (size_t r = 0; r < o->rows; ++r) {
+                for (size_t c = 0; c < o->cols; ++c) {
+                    a->grad[r * o->cols + c] += o->grad[r * o->cols + c];
+                    b->grad[r] -= o->grad[r * o->cols + c];
+                }
+            }
+        };
+        return out;
+    } else if (other.impl->rows == 1 && other.impl->cols == 1) {
+        // Scalar broadcasting
+        Tensor out(impl->rows, impl->cols);
+        for (size_t i = 0; i < impl->data.size(); ++i) {
+            out.impl->data[i] = impl->data[i] - other.impl->data[0];
+        }
+        auto a = impl; auto b = other.impl; auto o = out.impl;
+        o->parents = {a, b};
+        o->backward_op = [a, b, o]() {
+            for (size_t i = 0; i < o->grad.size(); ++i) {
+                a->grad[i] += o->grad[i];
+                b->grad[0] -= o->grad[i];
+            }
+        };
+        return out;
+    }
+    
+    throw std::invalid_argument("Dimensions must match or be broadcastable for subtraction");
 }
 
 Tensor Tensor::operator*(const Tensor& other) const {
