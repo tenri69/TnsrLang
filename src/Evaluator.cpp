@@ -29,18 +29,50 @@ Evaluator::Evaluator(std::ostream& out) : out(out), environment(&globalEnv), las
         Tensor target = args[1];
         Tensor error = pred - target;
         Tensor loss = DotProduct(Transpose(error), error);
-        return loss * (1.0 / (pred.impl->rows * pred.impl->cols));
+        return loss * (1.0 / (pred.impl->rows() * pred.impl->cols()));
     });
 
     globalEnv.defineNative("SGD_Step", [](const std::vector<Tensor>& args) {
         if (args.size() != 2) throw std::runtime_error("SGD_Step expects 2 arguments: (weights, learning_rate)");
         Tensor w = args[0];
         double lr = args[1].get(0, 0);
-        Tensor out(w.impl->rows, w.impl->cols);
+        Tensor out(w.impl->rows(), w.impl->cols());
         for (size_t i = 0; i < out.impl->data.size(); ++i) {
             out.impl->data[i] = w.impl->data[i] - w.impl->grad[i] * lr;
         }
         return out;
+    });
+
+    globalEnv.defineNative("DotProduct", [](const std::vector<Tensor>& args) {
+        if (args.size() != 2) throw std::runtime_error("DotProduct expects 2 arguments");
+        return DotProduct(args[0], args[1]);
+    });
+
+    globalEnv.defineNative("Sigmoid", [](const std::vector<Tensor>& args) {
+        if (args.size() != 1) throw std::runtime_error("Sigmoid expects 1 argument");
+        return Sigmoid(args[0]);
+    });
+
+    globalEnv.defineNative("ReLU", [](const std::vector<Tensor>& args) {
+        if (args.size() != 1) throw std::runtime_error("ReLU expects 1 argument");
+        return ReLU(args[0]);
+    });
+
+    globalEnv.defineNative("Transpose", [](const std::vector<Tensor>& args) {
+        if (args.size() != 1) throw std::runtime_error("Transpose expects 1 argument");
+        return Transpose(args[0]);
+    });
+
+    globalEnv.defineNative("RandomMatrix", [](const std::vector<Tensor>& args) {
+        if (args.size() != 2) throw std::runtime_error("RandomMatrix expects 2 arguments (rows, cols)");
+        return RandomMatrix((size_t)args[0].get(0, 0), (size_t)args[1].get(0, 0));
+    });
+
+    globalEnv.defineNative("ZeroGrad", [](const std::vector<Tensor>& args) {
+        if (args.size() != 1) throw std::runtime_error("ZeroGrad expects 1 argument");
+        Tensor w = args[0];
+        std::fill(w.impl->grad.begin(), w.impl->grad.end(), 0.0);
+        return w;
     });
 }
 
@@ -89,31 +121,10 @@ void Evaluator::visit(MatrixExpr& expr) {
     lastValue = Tensor(expr.rows, expr.cols, expr.values);
 }
 
-void Evaluator::visit(DotProductExpr& expr) {
-    Tensor left = evaluate(*expr.left);
-    Tensor right = evaluate(*expr.right);
-    lastValue = DotProduct(left, right);
-}
 
-void Evaluator::visit(ReLUExpr& expr) {
-    Tensor inner = evaluate(*expr.expr);
-    lastValue = ReLU(inner);
-}
 
-void Evaluator::visit(SigmoidExpr& expr) {
-    Tensor inner = evaluate(*expr.expr);
-    lastValue = Sigmoid(inner);
-}
 
-void Evaluator::visit(SoftmaxExpr& expr) {
-    Tensor inner = evaluate(*expr.expr);
-    lastValue = Softmax(inner);
-}
 
-void Evaluator::visit(TransposeExpr& expr) {
-    Tensor inner = evaluate(*expr.expr);
-    lastValue = Transpose(inner);
-}
 
 void Evaluator::visit(LoadExpr& expr) {
     lastValue = LoadTensor(expr.filename);
@@ -128,9 +139,9 @@ void Evaluator::visit(BinaryExpr& expr) {
     } else if (expr.op == TokenType::MINUS) {
         lastValue = left - right;
     } else if (expr.op == TokenType::STAR) {
-        if (left.impl->rows == 1 && left.impl->cols == 1) {
+        if (left.impl->rows() == 1 && left.impl->cols() == 1) {
             lastValue = right * left.get(0, 0);
-        } else if (right.impl->rows == 1 && right.impl->cols == 1) {
+        } else if (right.impl->rows() == 1 && right.impl->cols() == 1) {
             lastValue = left * right.get(0, 0);
         } else {
             lastValue = left * right; // Element-wise multiplication
@@ -174,11 +185,6 @@ void Evaluator::visit(CallExpr& expr) {
     lastValue = Tensor(1, 1, {0.0});
 }
 
-void Evaluator::visit(RandomMatrixExpr& expr) {
-    Tensor rows = evaluate(*expr.rows);
-    Tensor cols = evaluate(*expr.cols);
-    lastValue = RandomMatrix((size_t)rows.get(0,0), (size_t)cols.get(0,0));
-}
 
 void Evaluator::visit(LoadCSVExpr& expr) {
     lastValue = LoadCSV(expr.filename);
@@ -187,7 +193,7 @@ void Evaluator::visit(LoadCSVExpr& expr) {
 void Evaluator::visit(PropertyGetExpr& expr) {
     Tensor obj = evaluate(*expr.object);
     if (expr.name == "grad") {
-        lastValue = Tensor(obj.impl->rows, obj.impl->cols, obj.impl->grad);
+        lastValue = Tensor(obj.impl->rows(), obj.impl->cols(), obj.impl->grad);
     } else {
         throw std::runtime_error("Unknown property: " + expr.name);
     }

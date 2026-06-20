@@ -72,11 +72,6 @@ Token Lexer::identifierOrKeyword() {
     if (text == "let") type = TokenType::LET;
     else if (text == "Vector") type = TokenType::VECTOR;
     else if (text == "Matrix") type = TokenType::MATRIX;
-    else if (text == "DotProduct") type = TokenType::DOT_PRODUCT;
-    else if (text == "ReLU") type = TokenType::RELU;
-    else if (text == "Sigmoid") type = TokenType::SIGMOID;
-    else if (text == "Softmax") type = TokenType::SOFTMAX;
-    else if (text == "Transpose") type = TokenType::TRANSPOSE;
     else if (text == "Print") type = TokenType::PRINT;
     else if (text == "for") type = TokenType::FOR;
     else if (text == "to") type = TokenType::TO;
@@ -87,7 +82,6 @@ Token Lexer::identifierOrKeyword() {
     else if (text == "Save") type = TokenType::SAVE;
     else if (text == "Load") type = TokenType::LOAD;
     else if (text == "backward") type = TokenType::BACKWARD;
-    else if (text == "RandomMatrix") type = TokenType::RANDOM_MATRIX;
     else if (text == "LoadCSV") type = TokenType::LOAD_CSV;
     else if (text == "while") type = TokenType::WHILE;
     

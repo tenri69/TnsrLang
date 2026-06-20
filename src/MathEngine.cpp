@@ -52,8 +52,8 @@ void Tensor::backward() {
 }
 
 Tensor Tensor::operator+(const Tensor& other) const {
-    if (impl->rows == other.impl->rows && impl->cols == other.impl->cols) {
-        Tensor out(impl->rows, impl->cols);
+    if (impl->rows() == other.impl->rows() && impl->cols() == other.impl->cols()) {
+        Tensor out(impl->rows(), impl->cols());
         for (size_t i = 0; i < impl->data.size(); ++i) {
             out.impl->data[i] = impl->data[i] + other.impl->data[i];
         }
@@ -66,47 +66,47 @@ Tensor Tensor::operator+(const Tensor& other) const {
             }
         };
         return out;
-    } else if (impl->cols == other.impl->cols && other.impl->rows == 1) {
+    } else if (impl->cols() == other.impl->cols() && other.impl->rows() == 1) {
         // Broadcast across rows
-        Tensor out(impl->rows, impl->cols);
-        for (size_t r = 0; r < impl->rows; ++r) {
-            for (size_t c = 0; c < impl->cols; ++c) {
-                out.impl->data[r * impl->cols + c] = impl->data[r * impl->cols + c] + other.impl->data[c];
+        Tensor out(impl->rows(), impl->cols());
+        for (size_t r = 0; r < impl->rows(); ++r) {
+            for (size_t c = 0; c < impl->cols(); ++c) {
+                out.impl->data[r * impl->cols() + c] = impl->data[r * impl->cols() + c] + other.impl->data[c];
             }
         }
         auto a = impl; auto b = other.impl; auto o = out.impl;
         o->parents = {a, b};
         o->backward_op = [a, b, o]() {
-            for (size_t r = 0; r < o->rows; ++r) {
-                for (size_t c = 0; c < o->cols; ++c) {
-                    a->grad[r * o->cols + c] += o->grad[r * o->cols + c];
-                    b->grad[c] += o->grad[r * o->cols + c];
+            for (size_t r = 0; r < o->rows(); ++r) {
+                for (size_t c = 0; c < o->cols(); ++c) {
+                    a->grad[r * o->cols() + c] += o->grad[r * o->cols() + c];
+                    b->grad[c] += o->grad[r * o->cols() + c];
                 }
             }
         };
         return out;
-    } else if (impl->rows == other.impl->rows && other.impl->cols == 1) {
+    } else if (impl->rows() == other.impl->rows() && other.impl->cols() == 1) {
         // Broadcast across columns
-        Tensor out(impl->rows, impl->cols);
-        for (size_t r = 0; r < impl->rows; ++r) {
-            for (size_t c = 0; c < impl->cols; ++c) {
-                out.impl->data[r * impl->cols + c] = impl->data[r * impl->cols + c] + other.impl->data[r];
+        Tensor out(impl->rows(), impl->cols());
+        for (size_t r = 0; r < impl->rows(); ++r) {
+            for (size_t c = 0; c < impl->cols(); ++c) {
+                out.impl->data[r * impl->cols() + c] = impl->data[r * impl->cols() + c] + other.impl->data[r];
             }
         }
         auto a = impl; auto b = other.impl; auto o = out.impl;
         o->parents = {a, b};
         o->backward_op = [a, b, o]() {
-            for (size_t r = 0; r < o->rows; ++r) {
-                for (size_t c = 0; c < o->cols; ++c) {
-                    a->grad[r * o->cols + c] += o->grad[r * o->cols + c];
-                    b->grad[r] += o->grad[r * o->cols + c];
+            for (size_t r = 0; r < o->rows(); ++r) {
+                for (size_t c = 0; c < o->cols(); ++c) {
+                    a->grad[r * o->cols() + c] += o->grad[r * o->cols() + c];
+                    b->grad[r] += o->grad[r * o->cols() + c];
                 }
             }
         };
         return out;
-    } else if (other.impl->rows == 1 && other.impl->cols == 1) {
+    } else if (other.impl->rows() == 1 && other.impl->cols() == 1) {
         // Scalar broadcasting
-        Tensor out(impl->rows, impl->cols);
+        Tensor out(impl->rows(), impl->cols());
         for (size_t i = 0; i < impl->data.size(); ++i) {
             out.impl->data[i] = impl->data[i] + other.impl->data[0];
         }
@@ -125,8 +125,8 @@ Tensor Tensor::operator+(const Tensor& other) const {
 }
 
 Tensor Tensor::operator-(const Tensor& other) const {
-    if (impl->rows == other.impl->rows && impl->cols == other.impl->cols) {
-        Tensor out(impl->rows, impl->cols);
+    if (impl->rows() == other.impl->rows() && impl->cols() == other.impl->cols()) {
+        Tensor out(impl->rows(), impl->cols());
         for (size_t i = 0; i < impl->data.size(); ++i) {
             out.impl->data[i] = impl->data[i] - other.impl->data[i];
         }
@@ -139,47 +139,47 @@ Tensor Tensor::operator-(const Tensor& other) const {
             }
         };
         return out;
-    } else if (impl->cols == other.impl->cols && other.impl->rows == 1) {
+    } else if (impl->cols() == other.impl->cols() && other.impl->rows() == 1) {
         // Broadcast across rows
-        Tensor out(impl->rows, impl->cols);
-        for (size_t r = 0; r < impl->rows; ++r) {
-            for (size_t c = 0; c < impl->cols; ++c) {
-                out.impl->data[r * impl->cols + c] = impl->data[r * impl->cols + c] - other.impl->data[c];
+        Tensor out(impl->rows(), impl->cols());
+        for (size_t r = 0; r < impl->rows(); ++r) {
+            for (size_t c = 0; c < impl->cols(); ++c) {
+                out.impl->data[r * impl->cols() + c] = impl->data[r * impl->cols() + c] - other.impl->data[c];
             }
         }
         auto a = impl; auto b = other.impl; auto o = out.impl;
         o->parents = {a, b};
         o->backward_op = [a, b, o]() {
-            for (size_t r = 0; r < o->rows; ++r) {
-                for (size_t c = 0; c < o->cols; ++c) {
-                    a->grad[r * o->cols + c] += o->grad[r * o->cols + c];
-                    b->grad[c] -= o->grad[r * o->cols + c];
+            for (size_t r = 0; r < o->rows(); ++r) {
+                for (size_t c = 0; c < o->cols(); ++c) {
+                    a->grad[r * o->cols() + c] += o->grad[r * o->cols() + c];
+                    b->grad[c] -= o->grad[r * o->cols() + c];
                 }
             }
         };
         return out;
-    } else if (impl->rows == other.impl->rows && other.impl->cols == 1) {
+    } else if (impl->rows() == other.impl->rows() && other.impl->cols() == 1) {
         // Broadcast across columns
-        Tensor out(impl->rows, impl->cols);
-        for (size_t r = 0; r < impl->rows; ++r) {
-            for (size_t c = 0; c < impl->cols; ++c) {
-                out.impl->data[r * impl->cols + c] = impl->data[r * impl->cols + c] - other.impl->data[r];
+        Tensor out(impl->rows(), impl->cols());
+        for (size_t r = 0; r < impl->rows(); ++r) {
+            for (size_t c = 0; c < impl->cols(); ++c) {
+                out.impl->data[r * impl->cols() + c] = impl->data[r * impl->cols() + c] - other.impl->data[r];
             }
         }
         auto a = impl; auto b = other.impl; auto o = out.impl;
         o->parents = {a, b};
         o->backward_op = [a, b, o]() {
-            for (size_t r = 0; r < o->rows; ++r) {
-                for (size_t c = 0; c < o->cols; ++c) {
-                    a->grad[r * o->cols + c] += o->grad[r * o->cols + c];
-                    b->grad[r] -= o->grad[r * o->cols + c];
+            for (size_t r = 0; r < o->rows(); ++r) {
+                for (size_t c = 0; c < o->cols(); ++c) {
+                    a->grad[r * o->cols() + c] += o->grad[r * o->cols() + c];
+                    b->grad[r] -= o->grad[r * o->cols() + c];
                 }
             }
         };
         return out;
-    } else if (other.impl->rows == 1 && other.impl->cols == 1) {
+    } else if (other.impl->rows() == 1 && other.impl->cols() == 1) {
         // Scalar broadcasting
-        Tensor out(impl->rows, impl->cols);
+        Tensor out(impl->rows(), impl->cols());
         for (size_t i = 0; i < impl->data.size(); ++i) {
             out.impl->data[i] = impl->data[i] - other.impl->data[0];
         }
@@ -198,10 +198,10 @@ Tensor Tensor::operator-(const Tensor& other) const {
 }
 
 Tensor Tensor::operator*(const Tensor& other) const {
-    if (impl->rows != other.impl->rows || impl->cols != other.impl->cols) {
+    if (impl->rows() != other.impl->rows() || impl->cols() != other.impl->cols()) {
         throw std::invalid_argument("Dimensions must match for element-wise multiplication");
     }
-    Tensor out(impl->rows, impl->cols);
+    Tensor out(impl->rows(), impl->cols());
     for (size_t i = 0; i < impl->data.size(); ++i) {
         out.impl->data[i] = impl->data[i] * other.impl->data[i];
     }
@@ -221,7 +221,7 @@ Tensor Tensor::operator*(const Tensor& other) const {
 }
 
 Tensor Tensor::operator*(double scalar) const {
-    Tensor out(impl->rows, impl->cols);
+    Tensor out(impl->rows(), impl->cols());
     for (size_t i = 0; i < impl->data.size(); ++i) {
         out.impl->data[i] = impl->data[i] * scalar;
     }
@@ -239,11 +239,11 @@ Tensor Tensor::operator*(double scalar) const {
 }
 
 Tensor Tensor::get_row(size_t index) const {
-    if (index >= impl->rows) {
+    if (index >= impl->rows()) {
         throw std::out_of_range("Row index out of bounds");
     }
-    Tensor out(1, impl->cols);
-    for (size_t c = 0; c < impl->cols; ++c) {
+    Tensor out(1, impl->cols());
+    for (size_t c = 0; c < impl->cols(); ++c) {
         out.impl->data[c] = get(index, c);
     }
     
@@ -252,8 +252,8 @@ Tensor Tensor::get_row(size_t index) const {
     
     o->parents = {a};
     o->backward_op = [a, o, index]() {
-        for (size_t c = 0; c < o->cols; ++c) {
-            a->grad[index * a->cols + c] += o->grad[c];
+        for (size_t c = 0; c < o->cols(); ++c) {
+            a->grad[index * a->cols() + c] += o->grad[c];
         }
     };
     return out;
@@ -265,11 +265,11 @@ void Tensor::print(std::ostream& out) const {
         return;
     }
     out << "[\n";
-    for (size_t r = 0; r < impl->rows; ++r) {
+    for (size_t r = 0; r < impl->rows(); ++r) {
         out << "  [";
-        for (size_t c = 0; c < impl->cols; ++c) {
+        for (size_t c = 0; c < impl->cols(); ++c) {
             out << std::setw(8) << std::setprecision(4) << std::fixed << get(r, c);
-            if (c < impl->cols - 1) out << ", ";
+            if (c < impl->cols() - 1) out << ", ";
         }
         out << " ]\n";
     }
@@ -282,11 +282,11 @@ void Tensor::print_grad(std::ostream& out) const {
         return;
     }
     out << "[\n";
-    for (size_t r = 0; r < impl->rows; ++r) {
+    for (size_t r = 0; r < impl->rows(); ++r) {
         out << "  [";
-        for (size_t c = 0; c < impl->cols; ++c) {
+        for (size_t c = 0; c < impl->cols(); ++c) {
             out << std::setw(8) << std::setprecision(4) << std::fixed << get_grad(r, c);
-            if (c < impl->cols - 1) out << ", ";
+            if (c < impl->cols() - 1) out << ", ";
         }
         out << " ]\n";
     }
@@ -294,14 +294,14 @@ void Tensor::print_grad(std::ostream& out) const {
 }
 
 Tensor DotProduct(const Tensor& a, const Tensor& b) {
-    if (a.impl->cols != b.impl->rows) {
+    if (a.impl->cols() != b.impl->rows()) {
         throw std::invalid_argument("Matrix multiplication inner dimensions must match");
     }
-    Tensor out(a.impl->rows, b.impl->cols);
-    for (size_t i = 0; i < a.impl->rows; ++i) {
-        for (size_t j = 0; j < b.impl->cols; ++j) {
+    Tensor out(a.impl->rows(), b.impl->cols());
+    for (size_t i = 0; i < a.impl->rows(); ++i) {
+        for (size_t j = 0; j < b.impl->cols(); ++j) {
             double sum = 0.0;
-            for (size_t k = 0; k < a.impl->cols; ++k) {
+            for (size_t k = 0; k < a.impl->cols(); ++k) {
                 sum += a.get(i, k) * b.get(k, j);
             }
             out.set(i, j, sum);
@@ -314,12 +314,12 @@ Tensor DotProduct(const Tensor& a, const Tensor& b) {
     
     o_impl->parents = {a_impl, b_impl};
     o_impl->backward_op = [a_impl, b_impl, o_impl]() {
-        for (size_t i = 0; i < a_impl->rows; ++i) {
-            for (size_t j = 0; j < b_impl->cols; ++j) {
-                double g = o_impl->grad[i * o_impl->cols + j];
-                for (size_t k = 0; k < a_impl->cols; ++k) {
-                    a_impl->grad[i * a_impl->cols + k] += g * b_impl->data[k * b_impl->cols + j];
-                    b_impl->grad[k * b_impl->cols + j] += a_impl->data[i * a_impl->cols + k] * g;
+        for (size_t i = 0; i < a_impl->rows(); ++i) {
+            for (size_t j = 0; j < b_impl->cols(); ++j) {
+                double g = o_impl->grad[i * o_impl->cols() + j];
+                for (size_t k = 0; k < a_impl->cols(); ++k) {
+                    a_impl->grad[i * a_impl->cols() + k] += g * b_impl->data[k * b_impl->cols() + j];
+                    b_impl->grad[k * b_impl->cols() + j] += a_impl->data[i * a_impl->cols() + k] * g;
                 }
             }
         }
@@ -329,7 +329,7 @@ Tensor DotProduct(const Tensor& a, const Tensor& b) {
 }
 
 Tensor ReLU(const Tensor& a) {
-    Tensor out(a.impl->rows, a.impl->cols);
+    Tensor out(a.impl->rows(), a.impl->cols());
     for (size_t i = 0; i < a.impl->data.size(); ++i) {
         out.impl->data[i] = std::max(0.0, a.impl->data[i]);
     }
@@ -347,7 +347,7 @@ Tensor ReLU(const Tensor& a) {
 }
 
 Tensor Sigmoid(const Tensor& a) {
-    Tensor out(a.impl->rows, a.impl->cols);
+    Tensor out(a.impl->rows(), a.impl->cols());
     for (size_t i = 0; i < a.impl->data.size(); ++i) {
         out.impl->data[i] = 1.0 / (1.0 + std::exp(-a.impl->data[i]));
     }
@@ -366,19 +366,19 @@ Tensor Sigmoid(const Tensor& a) {
 }
 
 Tensor Softmax(const Tensor& a) {
-    Tensor out(a.impl->rows, a.impl->cols);
-    for (size_t r = 0; r < a.impl->rows; ++r) {
+    Tensor out(a.impl->rows(), a.impl->cols());
+    for (size_t r = 0; r < a.impl->rows(); ++r) {
         double max_val = a.get(r, 0);
-        for (size_t c = 1; c < a.impl->cols; ++c) {
+        for (size_t c = 1; c < a.impl->cols(); ++c) {
             max_val = std::max(max_val, a.get(r, c));
         }
         double sum = 0.0;
-        for (size_t c = 0; c < a.impl->cols; ++c) {
+        for (size_t c = 0; c < a.impl->cols(); ++c) {
             double e = std::exp(a.get(r, c) - max_val);
             out.set(r, c, e);
             sum += e;
         }
-        for (size_t c = 0; c < a.impl->cols; ++c) {
+        for (size_t c = 0; c < a.impl->cols(); ++c) {
             out.set(r, c, out.get(r, c) / sum);
         }
     }
@@ -388,16 +388,16 @@ Tensor Softmax(const Tensor& a) {
     
     o_impl->parents = {a_impl};
     o_impl->backward_op = [a_impl, o_impl]() {
-        for (size_t r = 0; r < o_impl->rows; ++r) {
-            for (size_t i = 0; i < o_impl->cols; ++i) {
-                double out_i = o_impl->data[r * o_impl->cols + i];
-                for (size_t j = 0; j < o_impl->cols; ++j) {
-                    double out_j = o_impl->data[r * o_impl->cols + j];
-                    double grad_j = o_impl->grad[r * o_impl->cols + j];
+        for (size_t r = 0; r < o_impl->rows(); ++r) {
+            for (size_t i = 0; i < o_impl->cols(); ++i) {
+                double out_i = o_impl->data[r * o_impl->cols() + i];
+                for (size_t j = 0; j < o_impl->cols(); ++j) {
+                    double out_j = o_impl->data[r * o_impl->cols() + j];
+                    double grad_j = o_impl->grad[r * o_impl->cols() + j];
                     if (i == j) {
-                        a_impl->grad[r * a_impl->cols + i] += out_i * (1.0 - out_i) * grad_j;
+                        a_impl->grad[r * a_impl->cols() + i] += out_i * (1.0 - out_i) * grad_j;
                     } else {
-                        a_impl->grad[r * a_impl->cols + i] += -out_j * out_i * grad_j;
+                        a_impl->grad[r * a_impl->cols() + i] += -out_j * out_i * grad_j;
                     }
                 }
             }
@@ -407,9 +407,9 @@ Tensor Softmax(const Tensor& a) {
 }
 
 Tensor Transpose(const Tensor& a) {
-    Tensor out(a.impl->cols, a.impl->rows);
-    for (size_t i = 0; i < a.impl->rows; ++i) {
-        for (size_t j = 0; j < a.impl->cols; ++j) {
+    Tensor out(a.impl->cols(), a.impl->rows());
+    for (size_t i = 0; i < a.impl->rows(); ++i) {
+        for (size_t j = 0; j < a.impl->cols(); ++j) {
             out.set(j, i, a.get(i, j));
         }
     }
@@ -418,9 +418,9 @@ Tensor Transpose(const Tensor& a) {
     auto o_impl = out.impl;
     o_impl->parents = {a_impl};
     o_impl->backward_op = [a_impl, o_impl]() {
-        for (size_t i = 0; i < a_impl->rows; ++i) {
-            for (size_t j = 0; j < a_impl->cols; ++j) {
-                a_impl->grad[i * a_impl->cols + j] += o_impl->grad[j * o_impl->cols + i];
+        for (size_t i = 0; i < a_impl->rows(); ++i) {
+            for (size_t j = 0; j < a_impl->cols(); ++j) {
+                a_impl->grad[i * a_impl->cols() + j] += o_impl->grad[j * o_impl->cols() + i];
             }
         }
     };
@@ -430,7 +430,7 @@ Tensor Transpose(const Tensor& a) {
 void SaveTensor(const Tensor& t, const std::string& filename) {
     std::ofstream file(filename);
     if (!file) throw std::runtime_error("Could not open file for saving");
-    file << t.impl->rows << " " << t.impl->cols << "\n";
+    file << t.impl->rows() << " " << t.impl->cols() << "\n";
     for (double val : t.impl->data) {
         file << val << " ";
     }

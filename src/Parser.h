@@ -64,13 +64,7 @@ private:
     
     std::unique_ptr<VectorExpr> parseVectorExpr();
     std::unique_ptr<MatrixExpr> parseMatrixExpr();
-    std::unique_ptr<DotProductExpr> parseDotProductExpr();
-    std::unique_ptr<ReLUExpr> parseReLUExpr();
-    std::unique_ptr<SigmoidExpr> parseSigmoidExpr();
-    std::unique_ptr<SoftmaxExpr> parseSoftmaxExpr();
-    std::unique_ptr<TransposeExpr> parseTransposeExpr();
     std::unique_ptr<LoadExpr> parseLoadExpr();
-    std::unique_ptr<RandomMatrixExpr> parseRandomMatrixExpr();
     std::unique_ptr<LoadCSVExpr> parseLoadCSVExpr();
     
     std::vector<double> parseNumberArray();

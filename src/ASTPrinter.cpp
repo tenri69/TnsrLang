@@ -87,45 +87,10 @@ void ASTPrinter::visit(MatrixExpr& expr) {
     currentId = pushNode(ss.str());
 }
 
-void ASTPrinter::visit(DotProductExpr& expr) {
-    int id = pushNode("DotProduct");
-    
-    expr.left->accept(*this);
-    link(id, currentId);
-    
-    expr.right->accept(*this);
-    link(id, currentId);
-    
-    currentId = id;
-}
 
-void ASTPrinter::visit(ReLUExpr& expr) {
-    int id = pushNode("ReLU");
-    expr.expr->accept(*this);
-    link(id, currentId);
-    currentId = id;
-}
 
-void ASTPrinter::visit(SigmoidExpr& expr) {
-    int id = pushNode("Sigmoid");
-    expr.expr->accept(*this);
-    link(id, currentId);
-    currentId = id;
-}
 
-void ASTPrinter::visit(SoftmaxExpr& expr) {
-    int id = pushNode("Softmax");
-    expr.expr->accept(*this);
-    link(id, currentId);
-    currentId = id;
-}
 
-void ASTPrinter::visit(TransposeExpr& expr) {
-    int id = pushNode("Transpose");
-    expr.expr->accept(*this);
-    link(id, currentId);
-    currentId = id;
-}
 
 void ASTPrinter::visit(CallExpr& expr) {
     currentId = pushNode("Call: " + expr.callee);
@@ -211,9 +176,6 @@ void ASTPrinter::visit(BackwardStmt& stmt) {
     currentId = pushNode("BackwardStmt");
 }
 
-void ASTPrinter::visit(RandomMatrixExpr& expr) {
-    currentId = pushNode("RandomMatrix");
-}
 
 void ASTPrinter::visit(LoadCSVExpr& expr) {
     currentId = pushNode("LoadCSV: " + expr.filename);

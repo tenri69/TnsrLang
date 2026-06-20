@@ -252,13 +252,7 @@ std::unique_ptr<Expr> Parser::parsePrimary() {
     if (match(TokenType::NUMBER)) return std::make_unique<NumberExpr>(previous().numberValue);
     if (match(TokenType::VECTOR)) return parseVectorExpr();
     if (match(TokenType::MATRIX)) return parseMatrixExpr();
-    if (match(TokenType::DOT_PRODUCT)) return parseDotProductExpr();
-    if (match(TokenType::RELU)) return parseReLUExpr();
-    if (match(TokenType::SIGMOID)) return parseSigmoidExpr();
-    if (match(TokenType::SOFTMAX)) return parseSoftmaxExpr();
-    if (match(TokenType::TRANSPOSE)) return parseTransposeExpr();
     if (match(TokenType::LOAD)) return parseLoadExpr();
-    if (match(TokenType::RANDOM_MATRIX)) return parseRandomMatrixExpr();
     if (match(TokenType::LOAD_CSV)) return parseLoadCSVExpr();
     if (match(TokenType::IDENTIFIER)) return std::make_unique<VariableExpr>(previous().text);
     if (match(TokenType::LPAREN)) {
@@ -301,57 +295,11 @@ std::unique_ptr<MatrixExpr> Parser::parseMatrixExpr() {
     return std::make_unique<MatrixExpr>((size_t)rowsTok.numberValue, (size_t)colsTok.numberValue, values);
 }
 
-std::unique_ptr<DotProductExpr> Parser::parseDotProductExpr() {
-    consume(TokenType::LPAREN, "Expect '(' after 'DotProduct'.");
-    std::unique_ptr<Expr> left = parseExpression();
-    consume(TokenType::COMMA, "Expect ',' between DotProduct arguments.");
-    std::unique_ptr<Expr> right = parseExpression();
-    consume(TokenType::RPAREN, "Expect ')' after DotProduct arguments.");
-    return std::make_unique<DotProductExpr>(std::move(left), std::move(right));
-}
-
-std::unique_ptr<ReLUExpr> Parser::parseReLUExpr() {
-    consume(TokenType::LPAREN, "Expect '(' after 'ReLU'.");
-    std::unique_ptr<Expr> expr = parseExpression();
-    consume(TokenType::RPAREN, "Expect ')' after ReLU arguments.");
-    return std::make_unique<ReLUExpr>(std::move(expr));
-}
-
-std::unique_ptr<SigmoidExpr> Parser::parseSigmoidExpr() {
-    consume(TokenType::LPAREN, "Expect '(' after 'Sigmoid'.");
-    std::unique_ptr<Expr> expr = parseExpression();
-    consume(TokenType::RPAREN, "Expect ')' after Sigmoid arguments.");
-    return std::make_unique<SigmoidExpr>(std::move(expr));
-}
-
-std::unique_ptr<SoftmaxExpr> Parser::parseSoftmaxExpr() {
-    consume(TokenType::LPAREN, "Expect '(' after 'Softmax'.");
-    std::unique_ptr<Expr> expr = parseExpression();
-    consume(TokenType::RPAREN, "Expect ')' after Softmax arguments.");
-    return std::make_unique<SoftmaxExpr>(std::move(expr));
-}
-
-std::unique_ptr<TransposeExpr> Parser::parseTransposeExpr() {
-    consume(TokenType::LPAREN, "Expect '(' after 'Transpose'.");
-    std::unique_ptr<Expr> expr = parseExpression();
-    consume(TokenType::RPAREN, "Expect ')' after Transpose arguments.");
-    return std::make_unique<TransposeExpr>(std::move(expr));
-}
-
 std::unique_ptr<LoadExpr> Parser::parseLoadExpr() {
     consume(TokenType::LPAREN, "Expect '(' after 'Load'.");
     Token filename = consume(TokenType::STRING, "Expect string filename after Load.");
     consume(TokenType::RPAREN, "Expect ')' after Load arguments.");
     return std::make_unique<LoadExpr>(filename.text);
-}
-
-std::unique_ptr<RandomMatrixExpr> Parser::parseRandomMatrixExpr() {
-    consume(TokenType::LPAREN, "Expect '(' after 'RandomMatrix'.");
-    std::unique_ptr<Expr> rows = parseExpression();
-    consume(TokenType::COMMA, "Expect ',' between RandomMatrix arguments.");
-    std::unique_ptr<Expr> cols = parseExpression();
-    consume(TokenType::RPAREN, "Expect ')' after RandomMatrix arguments.");
-    return std::make_unique<RandomMatrixExpr>(std::move(rows), std::move(cols));
 }
 
 std::unique_ptr<LoadCSVExpr> Parser::parseLoadCSVExpr() {

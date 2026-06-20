@@ -28,20 +28,31 @@
 namespace tnsr {
 
 struct TensorImpl {
-    size_t rows;
-    size_t cols;
+    std::vector<size_t> shape;
     std::vector<double> data;
     std::vector<double> grad;
+    
+    size_t rows() const { return shape.size() > 0 ? shape[0] : 1; }
+    size_t cols() const { return shape.size() > 1 ? shape[1] : 1; }
     
     // AutoGrad
     std::vector<std::shared_ptr<TensorImpl>> parents;
     std::function<void()> backward_op;
 
-    TensorImpl(size_t r, size_t c) : rows(r), cols(c), data(r * c, 0.0), grad(r * c, 0.0) {}
-    TensorImpl(size_t r, size_t c, const std::vector<double>& vals) : rows(r), cols(c), data(vals), grad(r * c, 0.0) {
-        if (vals.size() != r * c) {
-            throw std::invalid_argument("Size of values does not match rows * cols");
+    TensorImpl(const std::vector<size_t>& s) : shape(s) {
+        size_t num = 1;
+        for (auto d : shape) num *= d;
+        data.assign(num, 0.0);
+        grad.assign(num, 0.0);
+    }
+    
+    TensorImpl(const std::vector<size_t>& s, const std::vector<double>& vals) : shape(s), data(vals) {
+        size_t num = 1;
+        for (auto d : shape) num *= d;
+        if (vals.size() != num) {
+            throw std::invalid_argument("Size of values does not match shape dimensions");
         }
+        grad.assign(num, 0.0);
     }
 };
 
@@ -50,15 +61,20 @@ public:
     std::shared_ptr<TensorImpl> impl;
 
     Tensor() : impl(nullptr) {}
-    Tensor(size_t r, size_t c) : impl(std::make_shared<TensorImpl>(r, c)) {}
-    Tensor(size_t r, size_t c, const std::vector<double>& vals) : impl(std::make_shared<TensorImpl>(r, c, vals)) {}
+    Tensor(const std::vector<size_t>& shape) : impl(std::make_shared<TensorImpl>(shape)) {}
+    Tensor(const std::vector<size_t>& shape, const std::vector<double>& vals) : impl(std::make_shared<TensorImpl>(shape, vals)) {}
+    Tensor(size_t r, size_t c) : impl(std::make_shared<TensorImpl>(std::vector<size_t>{r, c})) {}
+    Tensor(size_t r, size_t c, const std::vector<double>& vals) : impl(std::make_shared<TensorImpl>(std::vector<size_t>{r, c}, vals)) {}
     Tensor(std::shared_ptr<TensorImpl> impl) : impl(impl) {}
 
-    double get(size_t r, size_t c) const { return impl->data[r * impl->cols + c]; }
-    void set(size_t r, size_t c, double val) { impl->data[r * impl->cols + c] = val; }
+    size_t rows() const { return impl->shape.size() > 0 ? impl->shape[0] : 1; }
+    size_t cols() const { return impl->shape.size() > 1 ? impl->shape[1] : 1; }
+
+    double get(size_t r, size_t c) const { return impl->data[r * cols() + c]; }
+    void set(size_t r, size_t c, double val) { impl->data[r * cols() + c] = val; }
     
-    double get_grad(size_t r, size_t c) const { return impl->grad[r * impl->cols + c]; }
-    void set_grad(size_t r, size_t c, double val) { impl->grad[r * impl->cols + c] = val; }
+    double get_grad(size_t r, size_t c) const { return impl->grad[r * cols() + c]; }
+    void set_grad(size_t r, size_t c, double val) { impl->grad[r * cols() + c] = val; }
 
     Tensor operator+(const Tensor& other) const;
     Tensor operator-(const Tensor& other) const;

@@ -100,14 +100,8 @@ public:
     void visit(VariableExpr& expr) override;
     void visit(VectorExpr& expr) override;
     void visit(MatrixExpr& expr) override;
-    void visit(DotProductExpr& expr) override;
-    void visit(ReLUExpr& expr) override;
-    void visit(SigmoidExpr& expr) override;
-    void visit(SoftmaxExpr& expr) override;
-    void visit(TransposeExpr& expr) override;
     void visit(CallExpr& expr) override;
     void visit(LoadExpr& expr) override;
-    void visit(RandomMatrixExpr& expr) override;
     void visit(LoadCSVExpr& expr) override;
     void visit(PropertyGetExpr& expr) override;
     void visit(IndexExpr& expr) override;

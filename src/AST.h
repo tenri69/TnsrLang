@@ -65,41 +65,6 @@ public:
     void accept(ASTVisitor& visitor) override;
 };
 
-class DotProductExpr : public Expr {
-public:
-    std::unique_ptr<Expr> left;
-    std::unique_ptr<Expr> right;
-    DotProductExpr(std::unique_ptr<Expr> l, std::unique_ptr<Expr> r) : left(std::move(l)), right(std::move(r)) {}
-    void accept(ASTVisitor& visitor) override;
-};
-
-class ReLUExpr : public Expr {
-public:
-    std::unique_ptr<Expr> expr;
-    ReLUExpr(std::unique_ptr<Expr> e) : expr(std::move(e)) {}
-    void accept(ASTVisitor& visitor) override;
-};
-
-class SigmoidExpr : public Expr {
-public:
-    std::unique_ptr<Expr> expr;
-    SigmoidExpr(std::unique_ptr<Expr> e) : expr(std::move(e)) {}
-    void accept(ASTVisitor& visitor) override;
-};
-
-class SoftmaxExpr : public Expr {
-public:
-    std::unique_ptr<Expr> expr;
-    SoftmaxExpr(std::unique_ptr<Expr> e) : expr(std::move(e)) {}
-    void accept(ASTVisitor& visitor) override;
-};
-
-class TransposeExpr : public Expr {
-public:
-    std::unique_ptr<Expr> expr;
-    TransposeExpr(std::unique_ptr<Expr> e) : expr(std::move(e)) {}
-    void accept(ASTVisitor& visitor) override;
-};
 
 class CallExpr : public Expr {
 public:
@@ -116,13 +81,6 @@ public:
     void accept(ASTVisitor& visitor) override;
 };
 
-class RandomMatrixExpr : public Expr {
-public:
-    std::unique_ptr<Expr> rows;
-    std::unique_ptr<Expr> cols;
-    RandomMatrixExpr(std::unique_ptr<Expr> r, std::unique_ptr<Expr> c) : rows(std::move(r)), cols(std::move(c)) {}
-    void accept(ASTVisitor& visitor) override;
-};
 
 class LoadCSVExpr : public Expr {
 public:
@@ -258,14 +216,8 @@ public:
     virtual void visit(VariableExpr& expr) = 0;
     virtual void visit(VectorExpr& expr) = 0;
     virtual void visit(MatrixExpr& expr) = 0;
-    virtual void visit(DotProductExpr& expr) = 0;
-    virtual void visit(ReLUExpr& expr) = 0;
-    virtual void visit(SigmoidExpr& expr) = 0;
-    virtual void visit(SoftmaxExpr& expr) = 0;
-    virtual void visit(TransposeExpr& expr) = 0;
     virtual void visit(CallExpr& expr) = 0;
     virtual void visit(LoadExpr& expr) = 0;
-    virtual void visit(RandomMatrixExpr& expr) = 0;
     virtual void visit(LoadCSVExpr& expr) = 0;
     virtual void visit(PropertyGetExpr& expr) = 0;
     virtual void visit(IndexExpr& expr) = 0;

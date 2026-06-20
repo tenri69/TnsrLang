@@ -24,11 +24,6 @@ void NumberExpr::accept(ASTVisitor& visitor) { visitor.visit(*this); }
 void VariableExpr::accept(ASTVisitor& visitor) { visitor.visit(*this); }
 void VectorExpr::accept(ASTVisitor& visitor) { visitor.visit(*this); }
 void MatrixExpr::accept(ASTVisitor& visitor) { visitor.visit(*this); }
-void DotProductExpr::accept(ASTVisitor& visitor) { visitor.visit(*this); }
-void ReLUExpr::accept(ASTVisitor& visitor) { visitor.visit(*this); }
-void SigmoidExpr::accept(ASTVisitor& visitor) { visitor.visit(*this); }
-void SoftmaxExpr::accept(ASTVisitor& visitor) { visitor.visit(*this); }
-void TransposeExpr::accept(ASTVisitor& visitor) { visitor.visit(*this); }
 void CallExpr::accept(ASTVisitor& visitor) { visitor.visit(*this); }
 void LoadExpr::accept(ASTVisitor& visitor) { visitor.visit(*this); }
 void BinaryExpr::accept(ASTVisitor& visitor) { visitor.visit(*this); }
@@ -41,7 +36,6 @@ void FunctionStmt::accept(ASTVisitor& visitor) { visitor.visit(*this); }
 void ReturnStmt::accept(ASTVisitor& visitor) { visitor.visit(*this); }
 void SaveStmt::accept(ASTVisitor& visitor) { visitor.visit(*this); }
 void BackwardStmt::accept(ASTVisitor& visitor) { visitor.visit(*this); }
-void RandomMatrixExpr::accept(ASTVisitor& visitor) { visitor.visit(*this); }
 void LoadCSVExpr::accept(ASTVisitor& visitor) { visitor.visit(*this); }
 void PropertyGetExpr::accept(ASTVisitor& visitor) { visitor.visit(*this); }
 void IndexExpr::accept(ASTVisitor& visitor) { visitor.visit(*this); }
