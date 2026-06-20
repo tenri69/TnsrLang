@@ -55,6 +55,8 @@ Then, open your browser and navigate to `http://localhost:8080/`.
 
 Check out the [Syntax Guide (SYNTAX.md)](SYNTAX.md) for a comprehensive overview of the language, including variables, loops, conditionals, and AutoGrad examples.
 
+New to machine learning? Read the [Core Concepts & Math Guide (CORE_CONCEPTS.md)](CORE_CONCEPTS.md) to understand how tensors, neural networks, and automatic differentiation work under the hood.
+
 ## Contributing
 Contributions are always welcome! Feel free to open an issue or submit a Pull Request if you have ideas for new features (like built-in optimizers, standard loss functions, or UI enhancements).
 
