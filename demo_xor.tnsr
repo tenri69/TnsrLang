@@ -1,0 +1,55 @@
+Print("==========================================")
+Print("       TnsrLang XOR Neural Network        ")
+Print("==========================================")
+
+let inputs = LoadCSV("xor_inputs.csv")
+let targets = LoadCSV("xor_targets.csv")
+
+// 2 Input Neurons, 4 Hidden Neurons, 1 Output Neuron
+let w1 = RandomMatrix(4, 2)
+let w2 = RandomMatrix(1, 4)
+
+let lr = 0.5
+let epoch = 0
+
+fn forward(w1, w2, x) {
+    let h_raw = DotProduct(w1, x)
+    let h = Sigmoid(h_raw)
+    let out_raw = DotProduct(w2, h)
+    return Sigmoid(out_raw)
+}
+
+Print("Training for 500 epochs...")
+
+while epoch < 500 {
+    let i = 0
+    while i < 4 {
+        let x = Transpose(inputs[i])
+        let y = targets[i]
+        
+        let pred = forward(w1, w2, x)
+        
+        let error = pred - y
+        let loss = DotProduct(Transpose(error), error)
+        
+        backward(loss)
+        
+        // Gradient Descent
+        w1 = w1 - w1.grad * lr
+        w2 = w2 - w2.grad * lr
+        
+        i = i + 1
+    }
+    epoch = epoch + 1
+}
+
+Print("Training Complete!")
+Print("==========================================")
+Print("Final Predictions:")
+
+let j = 0
+while j < 4 {
+    let x = Transpose(inputs[j])
+    Print(forward(w1, w2, x))
+    j = j + 1
+}
