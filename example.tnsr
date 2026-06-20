@@ -1,0 +1,13 @@
+// Definiera indata och vikter
+let input = Vector([1.0, 2.0, 3.0])
+let weights = Matrix(3, 3, [0.1, 0.2, 0.3, 
+                            0.4, 0.5, 0.6, 
+                            0.7, 0.8, 0.9])
+
+// Utför beräkningen (Forward pass)
+let hidden_layer = DotProduct(weights, input)
+let output = ReLU(hidden_layer)
+
+// Validera resultatet
+Print("Output från nätverket:")
+Print(output)

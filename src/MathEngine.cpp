@@ -1,0 +1,305 @@
+/*
+ * =====================================================================================
+ *
+ *       Filename:  MathEngine.cpp
+ *
+ *    Description:  TnsrLang Interpreter Engine Component
+ *
+ *        Version:  1.0
+ *        Created:  2026-06-20
+ *       Revision:  none
+ *       Compiler:  clang++
+ *
+ *         Author:  tenri69
+ *   Organization:  TnsrLang Open Source
+ *
+ * =====================================================================================
+ */
+
+#include "MathEngine.h"
+#include <algorithm>
+#include <cmath>
+#include <fstream>
+#include <set>
+
+namespace tnsr {
+
+void Tensor::backward() {
+    std::vector<std::shared_ptr<TensorImpl>> topo;
+    std::set<TensorImpl*> visited;
+    
+    std::function<void(std::shared_ptr<TensorImpl>)> build_topo = [&](std::shared_ptr<TensorImpl> v) {
+        if (visited.find(v.get()) == visited.end()) {
+            visited.insert(v.get());
+            for (auto child : v->parents) {
+                build_topo(child);
+            }
+            topo.push_back(v);
+        }
+    };
+    
+    build_topo(impl);
+    
+    std::fill(impl->grad.begin(), impl->grad.end(), 1.0);
+    
+    for (auto it = topo.rbegin(); it != topo.rend(); ++it) {
+        if ((*it)->backward_op) {
+            (*it)->backward_op();
+        }
+    }
+}
+
+Tensor Tensor::operator+(const Tensor& other) const {
+    if (impl->rows != other.impl->rows || impl->cols != other.impl->cols) {
+        throw std::invalid_argument("Dimensions must match for addition");
+    }
+    Tensor out(impl->rows, impl->cols);
+    for (size_t i = 0; i < impl->data.size(); ++i) {
+        out.impl->data[i] = impl->data[i] + other.impl->data[i];
+    }
+    
+    auto a = impl;
+    auto b = other.impl;
+    auto o = out.impl;
+    
+    o->parents = {a, b};
+    o->backward_op = [a, b, o]() {
+        for (size_t i = 0; i < o->grad.size(); ++i) {
+            a->grad[i] += o->grad[i];
+            b->grad[i] += o->grad[i];
+        }
+    };
+    return out;
+}
+
+Tensor Tensor::operator-(const Tensor& other) const {
+    if (impl->rows != other.impl->rows || impl->cols != other.impl->cols) {
+        throw std::invalid_argument("Dimensions must match for subtraction");
+    }
+    Tensor out(impl->rows, impl->cols);
+    for (size_t i = 0; i < impl->data.size(); ++i) {
+        out.impl->data[i] = impl->data[i] - other.impl->data[i];
+    }
+    
+    auto a = impl;
+    auto b = other.impl;
+    auto o = out.impl;
+    
+    o->parents = {a, b};
+    o->backward_op = [a, b, o]() {
+        for (size_t i = 0; i < o->grad.size(); ++i) {
+            a->grad[i] += o->grad[i];
+            b->grad[i] -= o->grad[i];
+        }
+    };
+    return out;
+}
+
+Tensor Tensor::operator*(double scalar) const {
+    Tensor out(impl->rows, impl->cols);
+    for (size_t i = 0; i < impl->data.size(); ++i) {
+        out.impl->data[i] = impl->data[i] * scalar;
+    }
+    
+    auto a = impl;
+    auto o = out.impl;
+    
+    o->parents = {a};
+    o->backward_op = [a, o, scalar]() {
+        for (size_t i = 0; i < o->grad.size(); ++i) {
+            a->grad[i] += scalar * o->grad[i];
+        }
+    };
+    return out;
+}
+
+void Tensor::print(std::ostream& out) const {
+    if (!impl) {
+        out << "[null tensor]\n";
+        return;
+    }
+    out << "[\n";
+    for (size_t r = 0; r < impl->rows; ++r) {
+        out << "  [";
+        for (size_t c = 0; c < impl->cols; ++c) {
+            out << std::setw(8) << std::setprecision(4) << std::fixed << get(r, c);
+            if (c < impl->cols - 1) out << ", ";
+        }
+        out << " ]\n";
+    }
+    out << "]\n";
+}
+
+void Tensor::print_grad(std::ostream& out) const {
+    if (!impl) {
+        out << "[null tensor]\n";
+        return;
+    }
+    out << "[\n";
+    for (size_t r = 0; r < impl->rows; ++r) {
+        out << "  [";
+        for (size_t c = 0; c < impl->cols; ++c) {
+            out << std::setw(8) << std::setprecision(4) << std::fixed << get_grad(r, c);
+            if (c < impl->cols - 1) out << ", ";
+        }
+        out << " ]\n";
+    }
+    out << "]\n";
+}
+
+Tensor DotProduct(const Tensor& a, const Tensor& b) {
+    if (a.impl->cols != b.impl->rows) {
+        throw std::invalid_argument("Matrix multiplication inner dimensions must match");
+    }
+    Tensor out(a.impl->rows, b.impl->cols);
+    for (size_t i = 0; i < a.impl->rows; ++i) {
+        for (size_t j = 0; j < b.impl->cols; ++j) {
+            double sum = 0.0;
+            for (size_t k = 0; k < a.impl->cols; ++k) {
+                sum += a.get(i, k) * b.get(k, j);
+            }
+            out.set(i, j, sum);
+        }
+    }
+    
+    auto a_impl = a.impl;
+    auto b_impl = b.impl;
+    auto o_impl = out.impl;
+    
+    o_impl->parents = {a_impl, b_impl};
+    o_impl->backward_op = [a_impl, b_impl, o_impl]() {
+        for (size_t i = 0; i < a_impl->rows; ++i) {
+            for (size_t j = 0; j < b_impl->cols; ++j) {
+                double g = o_impl->grad[i * o_impl->cols + j];
+                for (size_t k = 0; k < a_impl->cols; ++k) {
+                    a_impl->grad[i * a_impl->cols + k] += g * b_impl->data[k * b_impl->cols + j];
+                    b_impl->grad[k * b_impl->cols + j] += a_impl->data[i * a_impl->cols + k] * g;
+                }
+            }
+        }
+    };
+    
+    return out;
+}
+
+Tensor ReLU(const Tensor& a) {
+    Tensor out(a.impl->rows, a.impl->cols);
+    for (size_t i = 0; i < a.impl->data.size(); ++i) {
+        out.impl->data[i] = std::max(0.0, a.impl->data[i]);
+    }
+    
+    auto a_impl = a.impl;
+    auto o_impl = out.impl;
+    
+    o_impl->parents = {a_impl};
+    o_impl->backward_op = [a_impl, o_impl]() {
+        for (size_t i = 0; i < o_impl->grad.size(); ++i) {
+            a_impl->grad[i] += (a_impl->data[i] > 0 ? 1.0 : 0.0) * o_impl->grad[i];
+        }
+    };
+    return out;
+}
+
+Tensor Sigmoid(const Tensor& a) {
+    Tensor out(a.impl->rows, a.impl->cols);
+    for (size_t i = 0; i < a.impl->data.size(); ++i) {
+        out.impl->data[i] = 1.0 / (1.0 + std::exp(-a.impl->data[i]));
+    }
+    
+    auto a_impl = a.impl;
+    auto o_impl = out.impl;
+    
+    o_impl->parents = {a_impl};
+    o_impl->backward_op = [a_impl, o_impl]() {
+        for (size_t i = 0; i < o_impl->grad.size(); ++i) {
+            double s = o_impl->data[i];
+            a_impl->grad[i] += s * (1.0 - s) * o_impl->grad[i];
+        }
+    };
+    return out;
+}
+
+Tensor Softmax(const Tensor& a) {
+    Tensor out(a.impl->rows, a.impl->cols);
+    for (size_t r = 0; r < a.impl->rows; ++r) {
+        double max_val = a.get(r, 0);
+        for (size_t c = 1; c < a.impl->cols; ++c) {
+            max_val = std::max(max_val, a.get(r, c));
+        }
+        double sum = 0.0;
+        for (size_t c = 0; c < a.impl->cols; ++c) {
+            double e = std::exp(a.get(r, c) - max_val);
+            out.set(r, c, e);
+            sum += e;
+        }
+        for (size_t c = 0; c < a.impl->cols; ++c) {
+            out.set(r, c, out.get(r, c) / sum);
+        }
+    }
+    
+    auto a_impl = a.impl;
+    auto o_impl = out.impl;
+    
+    o_impl->parents = {a_impl};
+    o_impl->backward_op = [a_impl, o_impl]() {
+        for (size_t r = 0; r < o_impl->rows; ++r) {
+            for (size_t i = 0; i < o_impl->cols; ++i) {
+                double out_i = o_impl->data[r * o_impl->cols + i];
+                for (size_t j = 0; j < o_impl->cols; ++j) {
+                    double out_j = o_impl->data[r * o_impl->cols + j];
+                    double grad_j = o_impl->grad[r * o_impl->cols + j];
+                    if (i == j) {
+                        a_impl->grad[r * a_impl->cols + i] += out_i * (1.0 - out_i) * grad_j;
+                    } else {
+                        a_impl->grad[r * a_impl->cols + i] += -out_j * out_i * grad_j;
+                    }
+                }
+            }
+        }
+    };
+    return out;
+}
+
+Tensor Transpose(const Tensor& a) {
+    Tensor out(a.impl->cols, a.impl->rows);
+    for (size_t i = 0; i < a.impl->rows; ++i) {
+        for (size_t j = 0; j < a.impl->cols; ++j) {
+            out.set(j, i, a.get(i, j));
+        }
+    }
+    
+    auto a_impl = a.impl;
+    auto o_impl = out.impl;
+    o_impl->parents = {a_impl};
+    o_impl->backward_op = [a_impl, o_impl]() {
+        for (size_t i = 0; i < a_impl->rows; ++i) {
+            for (size_t j = 0; j < a_impl->cols; ++j) {
+                a_impl->grad[i * a_impl->cols + j] += o_impl->grad[j * o_impl->cols + i];
+            }
+        }
+    };
+    return out;
+}
+
+void SaveTensor(const Tensor& t, const std::string& filename) {
+    std::ofstream file(filename);
+    if (!file) throw std::runtime_error("Could not open file for saving");
+    file << t.impl->rows << " " << t.impl->cols << "\n";
+    for (double val : t.impl->data) {
+        file << val << " ";
+    }
+}
+
+Tensor LoadTensor(const std::string& filename) {
+    std::ifstream file(filename);
+    if (!file) throw std::runtime_error("Could not open file for loading");
+    size_t r, c;
+    file >> r >> c;
+    std::vector<double> vals(r * c);
+    for (size_t i = 0; i < r * c; ++i) {
+        file >> vals[i];
+    }
+    return Tensor(r, c, vals);
+}
+
+} // namespace tnsr

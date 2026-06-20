@@ -1,0 +1,32 @@
+// train.tnsr
+// Simple training loop for a single linear layer to learn a target
+
+let input = Vector([1.0, 2.0])
+let target = Vector([5.0])
+let weights = Matrix(1, 2, [0.1, 0.2])
+let lr = 0.05
+
+Print("Initial weights:")
+Print(weights)
+
+for i = 1 to 20 {
+    // 1. Forward Pass
+    let pred = DotProduct(weights, input)
+    
+    // 2. Error
+    let error = pred - target
+    
+    // 3. Backward Pass (Gradient)
+    let input_T = Transpose(input)
+    let grad = DotProduct(error, input_T)
+    
+    // 4. Update Weights
+    let update = grad * lr
+    let weights = weights - update
+}
+
+Print("Final weights after 20 epochs:")
+Print(weights)
+Print("Final prediction (should be close to 5.0):")
+let final_pred = DotProduct(weights, input)
+Print(final_pred)
