@@ -1,4 +1,11 @@
-# TnsrLang 🚀
+```text
+ _______ _   _  _____ _____  _               _   _  _____ 
+|__   __| \ | |/ ____|  __ \| |        /\   | \ | |/ ____|
+   | |  |  \| | (___ | |__) | |       /  \  |  \| | |  __ 
+   | |  | . ` |\___ \|  _  /| |      / /\ \ | . ` | | |_ |
+   | |  | |\  |____) | | \ \| |____ / ____ \| |\  | |__| |
+   |_|  |_| \_|_____/|_|  \_\______/_/    \_\_| \_|\_____|
+```
 
 ![C++](https://img.shields.io/badge/C++-17-blue.svg)
 ![License](https://img.shields.io/badge/License-MIT-green.svg)
@@ -8,7 +15,7 @@
 
 Instead of hiding the math behind massive library abstractions, TnsrLang provides an educational and highly transparent "brutalist" environment where you can build, train, and visualize neural networks directly via code.
 
-## 🌟 Key Features
+## Key Features
 
 * **AutoGrad Engine**: Built-in computational graph that tracks operations. Simply call `backward(loss)` and the engine automatically computes gradients for all linked tensors!
 * **Matrix & Vector Math**: Native support for high-performance tensor operations including `DotProduct` and `Transpose`.
@@ -17,7 +24,7 @@ Instead of hiding the math behind massive library abstractions, TnsrLang provide
 * **Integrated Web Terminal**: Comes with an embedded C++ HTTP server (`httplib`) that serves a brutalist, interactive browser terminal for writing code and visualizing network architectures in real-time ASCII.
 * **Model Persistence**: Native `Save()` and `Load()` capabilities to store trained weights to disk.
 
-## 🛠️ Architecture
+## Architecture
 
 TnsrLang is built completely from scratch without lexer/parser generators like Bison or Yacc.
 
@@ -26,7 +33,7 @@ TnsrLang is built completely from scratch without lexer/parser generators like B
 3. **Evaluator**: A Tree-Walk interpreter that manages environments, control flow, and executes the math.
 4. **MathEngine**: The core backbone handling all `Tensor` objects (wrapping `TensorImpl` for reference counting). It builds a Directed Acyclic Graph (DAG) during forward passes to support `.backward()` topological sorts.
 
-## 🚀 Getting Started
+## Getting Started
 
 ### Prerequisites
 * A modern C++17 compatible compiler (e.g., `clang++` or `g++`).
@@ -44,11 +51,11 @@ clang++ -std=c++17 src/*.cpp -o tnsrlang
 
 Then, open your browser and navigate to `http://localhost:8080/`.
 
-## 📚 Documentation
+## Documentation
 
 Check out the [Syntax Guide (SYNTAX.md)](SYNTAX.md) for a comprehensive overview of the language, including variables, loops, conditionals, and AutoGrad examples.
 
-## 🤝 Contributing
+## Contributing
 Contributions are always welcome! Feel free to open an issue or submit a Pull Request if you have ideas for new features (like built-in optimizers, standard loss functions, or UI enhancements).
 
 ---
