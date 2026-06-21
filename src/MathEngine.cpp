@@ -27,6 +27,9 @@
 
 namespace tnsr {
 
+// --- AutoGrad: The Backward Pass ---
+// Performs a topological sort of the computational graph and applies the chain rule
+// by calling `backward_op` on each tensor in reverse topological order.
 void Tensor::backward() {
     std::vector<std::shared_ptr<TensorImpl>> topo;
     std::set<TensorImpl*> visited;
@@ -52,6 +55,10 @@ void Tensor::backward() {
     }
 }
 
+// --- Operator Overloading & Broadcasting ---
+// Implements addition with support for "Broadcasting". If one tensor is a column vector
+// or row vector, it will automatically broadcast its values to match the dimensions 
+// of the larger matrix.
 Tensor Tensor::operator+(const Tensor& other) const {
     if (impl->rows() == other.impl->rows() && impl->cols() == other.impl->cols()) {
         Tensor out(impl->rows(), impl->cols());
@@ -292,6 +299,10 @@ void Tensor::print_grad(std::ostream& out) const {
     }
     out << "]\n";
 }
+
+// --- Native Math Operations ---
+// These functions are injected into the language as Native Functions.
+// They use Apple Accelerate (BLAS) for extreme performance when applicable.
 
 Tensor DotProduct(const Tensor& a, const Tensor& b) {
     if (a.cols() != b.rows()) {

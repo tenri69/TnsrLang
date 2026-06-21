@@ -23,6 +23,10 @@
 
 namespace tnsr {
 
+// The Lexer (or Scanner) takes the raw string of TnsrLang source code
+// and breaks it down into a stream of meaningful 'Tokens' (e.g. IDENTIFIER, NUMBER, PLUS).
+// This is the first step of the compiler pipeline.
+
 Lexer::Lexer(const std::string& source) : source(source), current(0) {}
 
 char Lexer::peek() const {
@@ -104,6 +108,7 @@ Token Lexer::stringLiteral() {
     return Token{TokenType::STRING, text, 0.0};
 }
 
+// Main tokenization loop. Reads characters until the source is exhausted.
 std::vector<Token> Lexer::tokenize() {
     std::vector<Token> tokens;
     

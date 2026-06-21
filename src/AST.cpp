@@ -20,6 +20,11 @@
 
 namespace tnsr {
 
+// The Abstract Syntax Tree (AST) represents the structure of the TnsrLang code.
+// The `accept` methods implement the Visitor pattern, allowing classes like 
+// Evaluator or ASTPrinter to process the tree without polluting the AST nodes 
+// with execution logic.
+
 void NumberExpr::accept(ASTVisitor& visitor) { visitor.visit(*this); }
 void VariableExpr::accept(ASTVisitor& visitor) { visitor.visit(*this); }
 void VectorExpr::accept(ASTVisitor& visitor) { visitor.visit(*this); }

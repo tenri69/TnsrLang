@@ -21,6 +21,10 @@
 
 namespace tnsr {
 
+// The Parser converts the flat stream of Tokens produced by the Lexer into an 
+// Abstract Syntax Tree (AST). It uses Recursive Descent parsing, meaning there is 
+// a dedicated C++ method for every grammar rule in the language.
+
 Parser::Parser(const std::vector<Token>& tokens) : tokens(tokens), current(0) {}
 
 Token Parser::peek() const { return tokens[current]; }
@@ -50,6 +54,7 @@ Token Parser::consume(TokenType type, const std::string& message) {
     throw std::runtime_error(message + " found: " + peek().text);
 }
 
+// Entry point for parsing. Parses statements until EOF is reached.
 std::vector<std::unique_ptr<Stmt>> Parser::parse() {
     std::vector<std::unique_ptr<Stmt>> statements;
     while (!isAtEnd()) {
@@ -179,6 +184,10 @@ std::unique_ptr<PrintStmt> Parser::parsePrintStmt() {
     consume(TokenType::RPAREN, "Expect ')' after print arguments.");
     return std::make_unique<PrintStmt>(std::move(expr));
 }
+
+// --- Expression Parsing (Order of Operations) ---
+// Expressions are parsed strictly in order of precedence:
+// Comparison -> Addition/Subtraction -> Multiplication -> Function Calls -> Primitives
 
 std::unique_ptr<Expr> Parser::parseExpression() {
     return parseComparison();

@@ -22,7 +22,13 @@
 
 namespace tnsr {
 
+// The Evaluator executes the AST. It walks the tree (Tree-Walk Interpreter) and 
+// evaluates each node. It also manages variables and scope via the Environment.
+
 Evaluator::Evaluator(std::ostream& out) : out(out), environment(&globalEnv), lastValue(0, 0) {
+    // --- Standard Library (Native Functions) ---
+    // Here we inject C++ functions into the TnsrLang global environment.
+    // This allows the scripting language to call fast C++ code natively.
     globalEnv.defineNative("MSELoss", [](const std::vector<Tensor>& args) {
         if (args.size() != 2) throw std::runtime_error("MSELoss expects 2 arguments");
         Tensor pred = args[0];
