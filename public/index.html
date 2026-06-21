@@ -277,7 +277,7 @@ Print(probs)
                 const parts = output.split("=== PROBABILITIES ===");
                 if (parts.length > 1) {
                     const probStr = parts[1].trim();
-                    const numMatches = probStr.match(/\\d+\\.\\d+(?:e[-+]\\d+)?/g);
+                    const numMatches = probStr.match(/\d+\.\d+(?:e[-+]\d+)?/g);
                     if (numMatches && numMatches.length === 10) {
                         const probabilities = numMatches.map(Number);
                         let maxIdx = 0;
