@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TnsrLang MNIST Predictor</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="app-container">
+        <header>
+            <div class="logo">
+                <h1>TnsrLang <span>Vision</span></h1>
+                <p>N-Dimensional Tensor Engine built in C++</p>
+            </div>
+            <nav>
+                <a href="/" class="active">MNIST Demo</a>
+                <a href="/playground.html">Playground Terminal</a>
+            </nav>
+        </header>
+
+        <main>
+            <div class="left-panel">
+                <div class="panel-header">
+                    <h2>Rita en siffra (0-9)</h2>
+                    <button id="clearBtn" class="secondary-btn">Rensa</button>
+                </div>
+                <div class="canvas-container">
+                    <canvas id="drawCanvas" width="280" height="280"></canvas>
+                    <!-- Offscreen canvas for 28x28 downscaling -->
+                    <canvas id="offscreenCanvas" width="28" height="28" style="display: none;"></canvas>
+                </div>
+                <button id="guessBtn" class="primary-btn">Gissa Siffran</button>
+            </div>
+
+            <div class="right-panel">
+                <div class="panel-header">
+                    <h2>AI Prediktion</h2>
+                </div>
+                
+                <div id="predictionResult" class="prediction-container">
+                    <div class="placeholder">
+                        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+                        <p>Rita till vänster och klicka "Gissa" för att köra en inferens genom TnsrLang-motorn.</p>
+                    </div>
+                </div>
+
+                <div class="terminal-container">
+                    <div class="terminal-header">
+                        <span>>_ TnsrLang Execution Log</span>
+                    </div>
+                    <div id="terminalOutput" class="terminal-body">
+                        // Redo...
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>

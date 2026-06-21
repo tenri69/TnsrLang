@@ -54,3 +54,8 @@ let hidden_final = ReLU(DotProduct(X_norm, W1))
 let logits_final = DotProduct(hidden_final, W2)
 let final_loss = CrossEntropyLoss(logits_final, Y)
 Print(final_loss)
+
+Print("Sparar modellvikter...")
+Save(W1, "W1.tnsrdata")
+Save(W2, "W2.tnsrdata")
+Print("Klart!")
