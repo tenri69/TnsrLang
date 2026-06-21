@@ -2,63 +2,308 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TnsrLang MNIST Predictor</title>
-    <link rel="stylesheet" href="style.css">
-    <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <title>TNSRLANG VISION</title>
+    <style>
+        :root {
+            --bg: #0c0c0c;
+            --fg: #cccccc;
+            --dim: #777777;
+            --accent: #ffffff;
+        }
+        body { 
+            font-family: 'Consolas', 'Courier New', monospace; 
+            background: var(--bg);
+            color: var(--fg); 
+            display: flex; 
+            flex-direction: column; 
+            height: 100vh; 
+            margin: 0; 
+            padding: 10px;
+            box-sizing: border-box;
+            overflow: hidden;
+        }
+        header { 
+            white-space: pre;
+            font-size: 14px;
+            color: var(--accent);
+            margin-bottom: 20px;
+        }
+        .container { 
+            display: flex; 
+            flex: 1; 
+            gap: 15px; 
+            overflow: hidden; 
+        }
+        .pane { 
+            border: 1px solid var(--dim);
+            display: flex; 
+            flex-direction: column; 
+            overflow: hidden;
+        }
+        .left-pane { flex: 1; display: flex; flex-direction: column; }
+        .right-pane { flex: 1; display: flex; flex-direction: column; gap: 15px; border: none; }
+        .pred-pane { flex: 1; border: 1px solid var(--dim); display: flex; flex-direction: column; overflow: hidden; }
+        .output-pane { flex: 1; border: 1px solid var(--dim); display: flex; flex-direction: column; overflow: hidden; }
+        
+        .pane-title { 
+            border-bottom: 1px solid var(--dim);
+            padding: 5px 10px; 
+            font-size: 14px; 
+            color: var(--dim);
+            background: var(--bg);
+            display: flex;
+            justify-content: space-between;
+        }
+        
+        .canvas-container {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #000;
+        }
+        
+        #drawCanvas {
+            cursor: crosshair;
+            touch-action: none;
+            border: 1px solid var(--dim);
+        }
+        
+        .output-content { 
+            flex: 1;
+            padding: 10px; 
+            overflow-y: auto; 
+            white-space: pre-wrap; 
+            font-size: 14px; 
+        }
+        
+        .pred-content {
+            flex: 1;
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            font-size: 14px;
+        }
+
+        .pred-number {
+            font-size: 72px;
+            font-weight: bold;
+            color: var(--accent);
+            margin: 10px 0;
+        }
+
+        .toolbar {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+        button, a.button { 
+            background: var(--fg); 
+            color: var(--bg); 
+            border: none; 
+            padding: 5px 15px; 
+            cursor: pointer; 
+            font-family: 'Consolas', 'Courier New', monospace; 
+            font-size: 14px; 
+            font-weight: bold;
+            text-decoration: none;
+            display: inline-block;
+        }
+        button:hover, a.button:hover { 
+            background: var(--accent); 
+        }
+        button:active, a.button:active {
+            background: var(--dim);
+        }
+        a.nav-btn {
+            background: transparent;
+            color: var(--accent);
+            border: 1px solid var(--dim);
+        }
+        a.nav-btn:hover {
+            background: var(--dim);
+            color: var(--accent);
+        }
+    </style>
 </head>
 <body>
-    <div class="app-container">
-        <header>
-            <div class="logo">
-                <h1>TnsrLang <span>Vision</span></h1>
-                <p>N-Dimensional Tensor Engine built in C++</p>
-            </div>
-            <nav>
-                <a href="/" class="active">MNIST Demo</a>
-                <a href="/playground.html">Playground Terminal</a>
-            </nav>
-        </header>
+    <header>
+=============================================================================
+  __  __ _   _ _____  _____ _______ 
+ |  \/  | \ | |_   _|/ ____|__   __|
+ | \  / |  \| | | | | (___    | |   
+ | |\/| | . ` | | |  \___ \   | |   
+ | |  | | |\  |_| |_ ____) |  | |   
+ |_|  |_|_| \_|_____|_____/   |_|   
 
-        <main>
-            <div class="left-panel">
-                <div class="panel-header">
-                    <h2>Rita en siffra (0-9)</h2>
-                    <button id="clearBtn" class="secondary-btn">Rensa</button>
-                </div>
-                <div class="canvas-container">
-                    <canvas id="drawCanvas" width="280" height="280"></canvas>
-                    <!-- Offscreen canvas for 28x28 downscaling -->
-                    <canvas id="offscreenCanvas" width="28" height="28" style="display: none;"></canvas>
-                </div>
-                <button id="guessBtn" class="primary-btn">Gissa Siffran</button>
-            </div>
-
-            <div class="right-panel">
-                <div class="panel-header">
-                    <h2>AI Prediktion</h2>
-                </div>
-                
-                <div id="predictionResult" class="prediction-container">
-                    <div class="placeholder">
-                        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
-                        <p>Rita till vänster och klicka "Gissa" för att köra en inferens genom TnsrLang-motorn.</p>
-                    </div>
-                </div>
-
-                <div class="terminal-container">
-                    <div class="terminal-header">
-                        <span>>_ TnsrLang Execution Log</span>
-                    </div>
-                    <div id="terminalOutput" class="terminal-body">
-                        // Redo...
-                    </div>
-                </div>
-            </div>
-        </main>
+ TnsrLang Vision Component v1.0
+=============================================================================
+    </header>
+    
+    <div class="toolbar">
+        <a href="/playground.html" class="button nav-btn">[ GOTO_TERMINAL.EXE ]</a>
+        <button id="clearBtn">[ CLEAR_CANVAS.EXE ]</button>
+        <button id="guessBtn">[ RUN_INFERENCE.EXE ]</button>
     </div>
 
-    <script src="app.js"></script>
+    <div class="container">
+        <div class="pane left-pane">
+            <div class="pane-title">C:\> draw_digit.exe</div>
+            <div class="canvas-container">
+                <canvas id="drawCanvas" width="280" height="280"></canvas>
+                <canvas id="offscreenCanvas" width="28" height="28" style="display: none;"></canvas>
+            </div>
+        </div>
+        
+        <div class="right-pane">
+            <div class="pred-pane">
+                <div class="pane-title">-- INFERENCE RESULT --</div>
+                <div id="predictionResult" class="pred-content">
+                    <p>Awaiting input tensor...</p>
+                </div>
+            </div>
+            <div class="output-pane">
+                <div class="pane-title">STDOUT ></div>
+                <div id="terminalOutput" class="output-content">Waiting for execution...</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('drawCanvas');
+        const ctx = canvas.getContext('2d');
+        const offscreenCanvas = document.getElementById('offscreenCanvas');
+        const offscreenCtx = offscreenCanvas.getContext('2d', { willReadFrequently: true });
+
+        const clearBtn = document.getElementById('clearBtn');
+        const guessBtn = document.getElementById('guessBtn');
+        const terminalOutput = document.getElementById('terminalOutput');
+        const predictionResult = document.getElementById('predictionResult');
+
+        let isDrawing = false;
+        let lastX = 0;
+        let lastY = 0;
+
+        ctx.fillStyle = 'black';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.strokeStyle = 'white';
+        ctx.lineWidth = 18;
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
+
+        function startDrawing(e) {
+            isDrawing = true;
+            const rect = canvas.getBoundingClientRect();
+            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+            const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+            lastX = clientX - rect.left;
+            lastY = clientY - rect.top;
+        }
+
+        function draw(e) {
+            if (!isDrawing) return;
+            e.preventDefault();
+            
+            const rect = canvas.getBoundingClientRect();
+            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+            const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+            const currentX = clientX - rect.left;
+            const currentY = clientY - rect.top;
+
+            ctx.beginPath();
+            ctx.moveTo(lastX, lastY);
+            ctx.lineTo(currentX, currentY);
+            ctx.stroke();
+
+            lastX = currentX;
+            lastY = currentY;
+        }
+
+        function stopDrawing() { isDrawing = false; }
+
+        canvas.addEventListener('mousedown', startDrawing);
+        canvas.addEventListener('mousemove', draw);
+        canvas.addEventListener('mouseup', stopDrawing);
+        canvas.addEventListener('mouseout', stopDrawing);
+        canvas.addEventListener('touchstart', startDrawing, { passive: false });
+        canvas.addEventListener('touchmove', draw, { passive: false });
+        canvas.addEventListener('touchend', stopDrawing);
+
+        clearBtn.addEventListener('click', () => {
+            ctx.fillStyle = 'black';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            predictionResult.innerHTML = '<p>Awaiting input tensor...</p>';
+            terminalOutput.textContent = 'Waiting for execution...';
+        });
+
+        guessBtn.addEventListener('click', async () => {
+            offscreenCtx.fillStyle = 'black';
+            offscreenCtx.fillRect(0, 0, 28, 28);
+            offscreenCtx.drawImage(canvas, 0, 0, 28, 28);
+
+            const imgData = offscreenCtx.getImageData(0, 0, 28, 28).data;
+            const pixels = [];
+            for (let i = 0; i < imgData.length; i += 4) {
+                pixels.push(imgData[i]);
+            }
+
+            const script = `Print("Loading weights...")
+let W1 = Load("W1.tnsrdata")
+let W2 = Load("W2.tnsrdata")
+Print("Preparing input tensor (1x784)...")
+let input = Matrix(1, 784, [${pixels.join(',')}])
+let scale = Vector([0.003921568])
+let X_norm = input * scale
+Print("Forward pass...")
+let hidden = ReLU(DotProduct(X_norm, W1))
+let logits = DotProduct(hidden, W2)
+let probs = Softmax(logits)
+Print("=== PROBABILITIES ===")
+Print(probs)
+`;
+            terminalOutput.textContent = "EXECUTING INFERENCE...\\n";
+            guessBtn.textContent = "[ RUNNING... ]";
+            guessBtn.disabled = true;
+
+            try {
+                const response = await fetch('/run', { method: 'POST', body: script });
+                const output = await response.text();
+                terminalOutput.textContent += output;
+
+                const parts = output.split("=== PROBABILITIES ===");
+                if (parts.length > 1) {
+                    const probStr = parts[1].trim();
+                    const numMatches = probStr.match(/\\d+\\.\\d+(?:e[-+]\\d+)?/g);
+                    if (numMatches && numMatches.length === 10) {
+                        const probabilities = numMatches.map(Number);
+                        let maxIdx = 0;
+                        let maxVal = probabilities[0];
+                        for (let i = 1; i < 10; i++) {
+                            if (probabilities[i] > maxVal) {
+                                maxVal = probabilities[i];
+                                maxIdx = i;
+                            }
+                        }
+                        predictionResult.innerHTML = `
+                            <p>Predicted Class:</p>
+                            <div class="pred-number">${maxIdx}</div>
+                            <p>Confidence: ${(maxVal * 100).toFixed(1)}%</p>
+                        `;
+                    } else {
+                        predictionResult.innerHTML = `<p>Error parsing probabilities.</p>`;
+                    }
+                }
+            } catch (err) {
+                terminalOutput.textContent += "\\nSYSTEM ERROR: " + err.message;
+            } finally {
+                guessBtn.textContent = "[ RUN_INFERENCE.EXE ]";
+                guessBtn.disabled = false;
+            }
+        });
+    </script>
 </body>
 </html>

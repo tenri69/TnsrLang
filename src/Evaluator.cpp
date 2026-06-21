@@ -84,6 +84,11 @@ Evaluator::Evaluator(std::ostream& out) : out(out), environment(&globalEnv), las
         return Transpose(args[0]);
     });
 
+    globalEnv.defineNative("Softmax", [](const std::vector<Tensor>& args) {
+        if (args.size() != 1) throw std::runtime_error("Softmax expects 1 argument");
+        return Softmax(args[0]);
+    });
+
     globalEnv.defineNative("RandomMatrix", [](const std::vector<Tensor>& args) {
         if (args.size() != 2) throw std::runtime_error("RandomMatrix expects 2 arguments (rows, cols)");
         return RandomMatrix((size_t)args[0].get(0, 0), (size_t)args[1].get(0, 0));
