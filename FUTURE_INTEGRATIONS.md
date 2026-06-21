@@ -17,9 +17,14 @@ När vi når detta steg kommer TnsrLang att sluta vara ett utbildningsverktyg oc
 - Istället för att `TensorImpl` har en `std::vector<double> data`, kommer den att ha en pekare till ett minnesblock på grafikkortet (`cudaMalloc`).
 - Våra funktioner (som `DotProduct`) exekverar en kernel på GPU:n istället för en C++ loop.
 
+## 2. Avancerad AI (Bildigenkänning & CNNs)
+
+**Mål:** Nu när TnsrLang stöder N-dimensionella tensorer kan vi bygga in stöd för bildbehandling (2D och 3D data).
+Genom att skriva en Native Function för **Conv2D** (Convolutional Neural Networks) kan vi träna TnsrLang att "se". Nästa naturliga milstolpe för språket är att skriva ett TnsrLang-skript som laddar ner **MNIST-datasetet** och lär sig att identifiera handskrivna siffror. Detta är det ultimata beviset på ett moget AI-ramverk.
+
 ---
 
-## 2. Python Bindings & Integreringar
+## 3. Python Bindings & Integreringar (Möjlig framtid)
 
 **Mål:** Göra motorn tillgänglig från andra, högre programmeringsspråk (som Python), precis som PyTorch och TensorFlow gör i bakgrunden.
 

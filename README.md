@@ -42,8 +42,8 @@ TnsrLang is built completely from scratch without lexer/parser generators like B
 To compile the interpreter and start the interactive web playground:
 
 ```bash
-# Compile the source files
-clang++ -std=c++17 src/*.cpp -o tnsrlang
+# Compile the source files with Apple Accelerate framework
+clang++ -std=c++17 -DACCELERATE_NEW_LAPACK -DACCELERATE_LAPACK_ILP64 -framework Accelerate src/*.cpp -o tnsrlang
 
 # Start the interactive web server
 ./tnsrlang --server

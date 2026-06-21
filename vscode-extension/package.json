@@ -1,0 +1,30 @@
+{
+    "name": "tnsrlang",
+    "displayName": "TnsrLang",
+    "description": "Syntax highlighting for the TnsrLang machine learning language",
+    "version": "1.0.0",
+    "publisher": "tenri69",
+    "engines": {
+        "vscode": "^1.60.0"
+    },
+    "categories": [
+        "Programming Languages"
+    ],
+    "contributes": {
+        "languages": [
+            {
+                "id": "tnsrlang",
+                "aliases": ["TnsrLang", "tnsr"],
+                "extensions": [".tnsr"],
+                "configuration": "./language-configuration.json"
+            }
+        ],
+        "grammars": [
+            {
+                "language": "tnsrlang",
+                "scopeName": "source.tnsr",
+                "path": "./syntaxes/tnsrlang.tmLanguage.json"
+            }
+        ]
+    }
+}

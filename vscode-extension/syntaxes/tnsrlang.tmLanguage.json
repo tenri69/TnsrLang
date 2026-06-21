@@ -1,0 +1,67 @@
+{
+    "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+    "name": "TnsrLang",
+    "patterns": [
+        {
+            "include": "#comments"
+        },
+        {
+            "include": "#keywords"
+        },
+        {
+            "include": "#strings"
+        },
+        {
+            "include": "#numbers"
+        },
+        {
+            "include": "#builtins"
+        }
+    ],
+    "repository": {
+        "comments": {
+            "patterns": [
+                {
+                    "name": "comment.line.double-slash.tnsrlang",
+                    "match": "//.*$"
+                }
+            ]
+        },
+        "keywords": {
+            "patterns": [
+                {
+                    "name": "keyword.control.tnsrlang",
+                    "match": "\\b(if|else|for|to|while|return|fn|let|backward)\\b"
+                }
+            ]
+        },
+        "builtins": {
+            "patterns": [
+                {
+                    "name": "support.function.tnsrlang",
+                    "match": "\\b(DotProduct|Sigmoid|ReLU|Softmax|Transpose|RandomMatrix|ZeroGrad|Load|Save|LoadCSV|Print|Vector|Matrix)\\b"
+                }
+            ]
+        },
+        "strings": {
+            "name": "string.quoted.double.tnsrlang",
+            "begin": "\"",
+            "end": "\"",
+            "patterns": [
+                {
+                    "name": "constant.character.escape.tnsrlang",
+                    "match": "\\\\."
+                }
+            ]
+        },
+        "numbers": {
+            "patterns": [
+                {
+                    "name": "constant.numeric.tnsrlang",
+                    "match": "\\b[0-9]+(\\.[0-9]+)?\\b"
+                }
+            ]
+        }
+    },
+    "scopeName": "source.tnsr"
+}

@@ -23,6 +23,7 @@
 #include <sstream>
 #include <set>
 #include <random>
+#include <Accelerate/Accelerate.h>
 
 namespace tnsr {
 
@@ -288,26 +289,27 @@ void Tensor::print_grad(std::ostream& out) const {
             out << std::setw(8) << std::setprecision(4) << std::fixed << get_grad(r, c);
             if (c < impl->cols() - 1) out << ", ";
         }
-        out << " ]\n";
     }
     out << "]\n";
 }
 
 Tensor DotProduct(const Tensor& a, const Tensor& b) {
-    if (a.impl->cols() != b.impl->rows()) {
-        throw std::invalid_argument("Matrix multiplication inner dimensions must match");
-    }
-    Tensor out(a.impl->rows(), b.impl->cols());
-    for (size_t i = 0; i < a.impl->rows(); ++i) {
-        for (size_t j = 0; j < b.impl->cols(); ++j) {
-            double sum = 0.0;
-            for (size_t k = 0; k < a.impl->cols(); ++k) {
-                sum += a.get(i, k) * b.get(k, j);
-            }
-            out.set(i, j, sum);
-        }
+    if (a.cols() != b.rows()) {
+        throw std::runtime_error("Matrix dimensions must agree for DotProduct");
     }
     
+    Tensor out(a.rows(), b.cols());
+    
+    // cblas_dgemm performs C = alpha * A * B + beta * C
+    // Since our data is flat row-major vector:
+    cblas_dgemm(CblasRowMajor, CblasNoTrans, CblasNoTrans, 
+                a.rows(), b.cols(), a.cols(), 
+                1.0, 
+                a.impl->data.data(), a.cols(), 
+                b.impl->data.data(), b.cols(), 
+                0.0, 
+                out.impl->data.data(), out.cols());
+                
     auto a_impl = a.impl;
     auto b_impl = b.impl;
     auto o_impl = out.impl;
