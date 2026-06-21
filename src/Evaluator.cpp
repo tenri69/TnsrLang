@@ -38,6 +38,21 @@ Evaluator::Evaluator(std::ostream& out) : out(out), environment(&globalEnv), las
         return loss * (1.0 / (pred.impl->rows() * pred.impl->cols()));
     });
 
+    globalEnv.defineNative("CrossEntropyLoss", [](const std::vector<Tensor>& args) {
+        if (args.size() != 2) throw std::runtime_error("CrossEntropyLoss expects 2 arguments: (logits, targets)");
+        return CrossEntropyLoss(args[0], args[1]);
+    });
+
+    globalEnv.defineNative("Slice", [](const std::vector<Tensor>& args) {
+        if (args.size() != 5) throw std::runtime_error("Slice expects 5 arguments: (tensor, r_start, r_end, c_start, c_end)");
+        return Slice(args[0], (size_t)args[1].get(0,0), (size_t)args[2].get(0,0), (size_t)args[3].get(0,0), (size_t)args[4].get(0,0));
+    });
+
+    globalEnv.defineNative("OneHot", [](const std::vector<Tensor>& args) {
+        if (args.size() != 2) throw std::runtime_error("OneHot expects 2 arguments: (labels, num_classes)");
+        return OneHot(args[0], (size_t)args[1].get(0,0));
+    });
+
     globalEnv.defineNative("SGD_Step", [](const std::vector<Tensor>& args) {
         if (args.size() != 2) throw std::runtime_error("SGD_Step expects 2 arguments: (weights, learning_rate)");
         Tensor w = args[0];

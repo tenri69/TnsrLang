@@ -120,4 +120,20 @@ Tensor LoadTensor(const std::string& filename);
 Tensor LoadCSV(const std::string& filename);
 Tensor RandomMatrix(size_t rows, size_t cols);
 
+/**
+ * @brief Slices a tensor to extract a submatrix.
+ */
+Tensor Slice(const Tensor& a, size_t row_start, size_t row_end, size_t col_start, size_t col_end);
+
+/**
+ * @brief Converts a 1D tensor of class labels into a 2D one-hot encoded matrix.
+ */
+Tensor OneHot(const Tensor& labels, size_t num_classes);
+
+/**
+ * @brief Computes Softmax probabilities and Cross-Entropy Loss in a single, numerically stable step.
+ * Returns a 1x1 scalar tensor containing the average loss.
+ */
+Tensor CrossEntropyLoss(const Tensor& logits, const Tensor& targets);
+
 } // namespace tnsr
