@@ -187,6 +187,11 @@ Evaluator::Evaluator(std::ostream& out) : out(out), environment(&globalEnv), las
     static std::unordered_map<int, Tensor> model_configs;
     static int model_counter = 0;
     
+    // Adam Optimizer state
+    static std::unordered_map<int, std::vector<Tensor>> model_adam_m;
+    static std::unordered_map<int, std::vector<Tensor>> model_adam_v;
+    static std::unordered_map<int, int> model_adam_t;
+    
     typedef Tensor (*JitForwardFunc)(Tensor, std::vector<Tensor>&, double);
     static std::unordered_map<int, JitForwardFunc> jit_functions;
 
@@ -535,6 +540,62 @@ Evaluator::Evaluator(std::ostream& out) : out(out), environment(&globalEnv), las
             }
             std::fill(w.impl->grad.begin(), w.impl->grad.end(), 0.0);
         }
+        return Tensor(1, 1, {1.0});
+    });
+    
+    globalEnv.defineNative("OptimizeAdam", [](const std::vector<Tensor>& args) {
+        if (args.size() < 2) throw std::runtime_error("OptimizeAdam expects at least (model_id, lr)");
+        int id = args[0].get(0, 0);
+        double lr = args[1].get(0, 0);
+        double beta1 = args.size() > 2 ? args[2].get(0, 0) : 0.9;
+        double beta2 = args.size() > 3 ? args[3].get(0, 0) : 0.999;
+        double epsilon = 1e-8;
+        
+        std::vector<Tensor>& weights = model_weights[id];
+        
+        // Initialize m and v if they don't exist
+        if (model_adam_m.find(id) == model_adam_m.end()) {
+            std::vector<Tensor> m;
+            std::vector<Tensor> v;
+            for (auto& w : weights) {
+                m.push_back(Tensor(w.rows(), w.cols(), std::vector<double>(w.impl->data.size(), 0.0)));
+                v.push_back(Tensor(w.rows(), w.cols(), std::vector<double>(w.impl->data.size(), 0.0)));
+            }
+            model_adam_m[id] = m;
+            model_adam_v[id] = v;
+            model_adam_t[id] = 0;
+        }
+        
+        model_adam_t[id] += 1;
+        int t = model_adam_t[id];
+        
+        std::vector<Tensor>& m = model_adam_m[id];
+        std::vector<Tensor>& v = model_adam_v[id];
+        
+        for (size_t i = 0; i < weights.size(); ++i) {
+            Tensor& w = weights[i];
+            Tensor& m_i = m[i];
+            Tensor& v_i = v[i];
+            
+            for (size_t j = 0; j < w.impl->data.size(); ++j) {
+                double g = w.impl->grad[j];
+                
+                // Update biased first moment estimate
+                m_i.impl->data[j] = beta1 * m_i.impl->data[j] + (1.0 - beta1) * g;
+                // Update biased second raw moment estimate
+                v_i.impl->data[j] = beta2 * v_i.impl->data[j] + (1.0 - beta2) * g * g;
+                
+                // Compute bias-corrected first moment estimate
+                double m_hat = m_i.impl->data[j] / (1.0 - std::pow(beta1, t));
+                // Compute bias-corrected second raw moment estimate
+                double v_hat = v_i.impl->data[j] / (1.0 - std::pow(beta2, t));
+                
+                // Update weights
+                w.impl->data[j] -= lr * m_hat / (std::sqrt(v_hat) + epsilon);
+            }
+            std::fill(w.impl->grad.begin(), w.impl->grad.end(), 0.0);
+        }
+        
         return Tensor(1, 1, {1.0});
     });
 

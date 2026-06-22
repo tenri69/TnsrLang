@@ -30,7 +30,7 @@ let gpt = Sequential([
 
 Print("JIT-Kompilerar nätverket för extrem prestanda...")
 let _j = JIT(gpt)
-let lr = 0.05
+let lr = 0.005
 
 Print("Startar träning (visar endast de första 50 sekvenserna för demonstration)...")
 
@@ -54,8 +54,8 @@ for epoch = 1 to 5 {
         // Bakåtpass
         backward(loss)
         
-        // Uppdatera vikter
-        let _opt = Optimize(gpt, lr)
+        // Uppdatera vikter med Adam Optimeraren (mycket snabbare inlärning)
+        let _opt = OptimizeAdam(gpt, lr)
         
         if (i > 48) {
             Print("Epoch klar. Senaste Loss:")
