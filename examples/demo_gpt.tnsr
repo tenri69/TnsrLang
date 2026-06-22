@@ -10,13 +10,13 @@ let X_data = LoadCSV("data/shakespeare_X.csv")
 let Y_data = LoadCSV("data/shakespeare_Y.csv")
 
 let seq_len = 8
-let vocab_size = 34
+let vocab_size = 42
 let embed_dim = 64
 
 Print("Initierar Transformer-nätverket...")
 let gpt = Sequential([
-    // Embedding (konverterar 34 tecken till 64 dimensioner)
-    DenseLayer(34, 64),
+    // Embedding (konverterar 42 tecken till 64 dimensioner)
+    DenseLayer(42, 64),
     
     // Transformer Block (MultiHeadAttention)
     MultiHeadAttentionLayer(64, 4),
@@ -24,29 +24,28 @@ let gpt = Sequential([
     ReLULayer(),
     DenseLayer(128, 64),
     
-    // Output Layer (Från 64 dimensioner tillbaka till 34 möjliga tecken)
-    DenseLayer(64, 34)
+    // Output Layer (Från 64 dimensioner tillbaka till 42 möjliga tecken)
+    DenseLayer(64, 42)
 ])
 
 Print("JIT-Kompilerar nätverket för extrem prestanda...")
 let _j = JIT(gpt)
 let lr = 0.005
 
-Print("Startar träning (visar endast de första 50 sekvenserna för demonstration)...")
+Print("Startar träning (Detta kommer ta en liten stund)...")
 
-for epoch = 1 to 5 {
-    // För att spara tid under demot tränar vi bara på 50 sekvenser per epok
-    for i = 0 to 50 {
+for epoch = 1 to 1000 {
+    for i = 0 to 662 {
         // Hämta en sekvens från datan
         let x_seq = GetRow(X_data, i) // [1, 8]
         let y_seq = GetRow(Y_data, i) // [1, 8]
         
-        // Konvertera till One-Hot kodning (OneHot returnerar [8, 34])
-        let x_onehot = OneHot(x_seq, 34)
-        let y_onehot = OneHot(y_seq, 34)
+        // Konvertera till One-Hot kodning
+        let x_onehot = OneHot(x_seq, 42)
+        let y_onehot = OneHot(y_seq, 42)
         
         // Framåtpass via JIT maskinkod
-        let preds = Forward(gpt, x_onehot, 1.0) // [8, 34]
+        let preds = Forward(gpt, x_onehot, 1.0) // [8, 42]
         
         // Beräkna loss (CrossEntropy hanterar softmax + derivata automatiskt)
         let loss = CrossEntropyLoss(preds, y_onehot)
@@ -57,7 +56,7 @@ for epoch = 1 to 5 {
         // Uppdatera vikter med Adam Optimeraren (mycket snabbare inlärning)
         let _opt = OptimizeAdam(gpt, lr)
         
-        if (i > 48) {
+        if (i > 661) {
             Print("Epoch klar. Senaste Loss:")
             Print(loss)
         }

@@ -266,7 +266,7 @@ Evaluator::Evaluator(std::ostream& out) : out(out), environment(&globalEnv), las
         out.close();
         
         std::string libname = "./jit_model_" + std::to_string(id) + ".dylib";
-        std::string cmd = "clang++ -shared -fPIC -std=c++17 -O3 " + filename + " src/MathEngine.cpp src/MetalEngine.mm -o " + libname + " -framework Accelerate -framework Metal -framework MetalPerformanceShaders -framework Foundation";
+        std::string cmd = "clang++ -shared -fPIC -std=c++17 -O3 -fobjc-arc " + filename + " src/MathEngine.cpp src/MetalEngine.mm -o " + libname + " -framework Accelerate -framework Metal -framework MetalPerformanceShaders -framework Foundation";
         std::cout << "[JIT] Compiling C++ model to machine code... (" << cmd << ")\n";
         int ret = system(cmd.c_str());
         if (ret != 0) throw std::runtime_error("JIT Compilation failed!");

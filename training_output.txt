@@ -1,0 +1,29 @@
+jit_model_1.cpp:4:19: warning: 'jit_forward_1' has C-linkage specified, but returns user-defined type 'Tensor' which is incompatible with C [-Wreturn-type-c-linkage]
+    4 | extern "C" Tensor jit_forward_1(Tensor X, std::vector<Tensor>& weights, double is_training) {
+      |                   ^
+1 warning generated.
+src/MathEngine.cpp:391:9: warning: 'cblas_dgemm' is deprecated: first deprecated in macOS 13.3 - An updated CBLAS interface supporting ILP64 is available.  Please compile with -DACCELERATE_NEW_LAPACK to access the new headers and -DACCELERATE_LAPACK_ILP64 for ILP64 support. [-Wdeprecated-declarations]
+  391 |         cblas_dgemm(CblasRowMajor, CblasNoTrans, CblasNoTrans, 
+      |         ^
+/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/System/Library/Frameworks/vecLib.framework/Headers/cblas.h:647:6: note: 'cblas_dgemm' has been explicitly marked deprecated here
+  647 | void cblas_dgemm(const enum CBLAS_ORDER __Order,
+      |      ^
+src/MathEngine.cpp:928:9: warning: 'cblas_dgemm' is deprecated: first deprecated in macOS 13.3 - An updated CBLAS interface supporting ILP64 is available.  Please compile with -DACCELERATE_NEW_LAPACK to access the new headers and -DACCELERATE_LAPACK_ILP64 for ILP64 support. [-Wdeprecated-declarations]
+  928 |         cblas_dgemm(CblasRowMajor, CblasNoTrans, CblasNoTrans,
+      |         ^
+/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/System/Library/Frameworks/vecLib.framework/Headers/cblas.h:647:6: note: 'cblas_dgemm' has been explicitly marked deprecated here
+  647 | void cblas_dgemm(const enum CBLAS_ORDER __Order,
+      |      ^
+src/MathEngine.cpp:953:13: warning: 'cblas_dgemm' is deprecated: first deprecated in macOS 13.3 - An updated CBLAS interface supporting ILP64 is available.  Please compile with -DACCELERATE_NEW_LAPACK to access the new headers and -DACCELERATE_LAPACK_ILP64 for ILP64 support. [-Wdeprecated-declarations]
+  953 |             cblas_dgemm(CblasRowMajor, CblasNoTrans, CblasTrans,
+      |             ^
+/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/System/Library/Frameworks/vecLib.framework/Headers/cblas.h:647:6: note: 'cblas_dgemm' has been explicitly marked deprecated here
+  647 | void cblas_dgemm(const enum CBLAS_ORDER __Order,
+      |      ^
+src/MathEngine.cpp:960:13: warning: 'cblas_dgemm' is deprecated: first deprecated in macOS 13.3 - An updated CBLAS interface supporting ILP64 is available.  Please compile with -DACCELERATE_NEW_LAPACK to access the new headers and -DACCELERATE_LAPACK_ILP64 for ILP64 support. [-Wdeprecated-declarations]
+  960 |             cblas_dgemm(CblasRowMajor, CblasTrans, CblasNoTrans,
+      |             ^
+/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/System/Library/Frameworks/vecLib.framework/Headers/cblas.h:647:6: note: 'cblas_dgemm' has been explicitly marked deprecated here
+  647 | void cblas_dgemm(const enum CBLAS_ORDER __Order,
+      |      ^
+4 warnings generated.

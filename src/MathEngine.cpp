@@ -402,10 +402,10 @@ Tensor DotProduct(const Tensor& a, const Tensor& b) {
     auto o_impl = out.impl;
     
     o_impl->parents = {a_impl, b_impl};
-    o_impl->backward_op = [a_impl, b_impl, o_impl]() {
+    o_impl->backward_op = [a_impl, b_impl, o_ptr = o_impl.get()]() {
         for (size_t i = 0; i < a_impl->rows(); ++i) {
             for (size_t j = 0; j < b_impl->cols(); ++j) {
-                double g = o_impl->grad[i * o_impl->cols() + j];
+                double g = o_ptr->grad[i * o_ptr->cols() + j];
                 for (size_t k = 0; k < a_impl->cols(); ++k) {
                     a_impl->grad[i * a_impl->cols() + k] += g * b_impl->data[k * b_impl->cols() + j];
                     b_impl->grad[k * b_impl->cols() + j] += a_impl->data[i * a_impl->cols() + k] * g;
@@ -429,11 +429,11 @@ Tensor ReLU(const Tensor& a) {
     auto o_impl = out.impl;
     
     o_impl->parents = {a_impl};
-    o_impl->backward_op = [a_impl, o_impl]() {
+    o_impl->backward_op = [a_impl, o_ptr = o_impl.get()]() {
         double* a_grad = a_impl->grad.data();
         const double* a_data_ptr = a_impl->data.data();
-        const double* o_grad = o_impl->grad.data();
-        dispatch_apply(o_impl->grad.size(), dispatch_get_global_queue(QOS_CLASS_USER_INITIATED, 0), ^(size_t i) {
+        const double* o_grad = o_ptr->grad.data();
+        dispatch_apply(o_ptr->grad.size(), dispatch_get_global_queue(QOS_CLASS_USER_INITIATED, 0), ^(size_t i) {
             a_grad[i] += (a_data_ptr[i] > 0 ? 1.0 : 0.0) * o_grad[i];
         });
     };
@@ -452,11 +452,11 @@ Tensor Sigmoid(const Tensor& a) {
     auto o_impl = out.impl;
     
     o_impl->parents = {a_impl};
-    o_impl->backward_op = [a_impl, o_impl]() {
+    o_impl->backward_op = [a_impl, o_ptr = o_impl.get()]() {
         double* a_grad = a_impl->grad.data();
-        const double* o_data = o_impl->data.data();
-        const double* o_grad = o_impl->grad.data();
-        dispatch_apply(o_impl->grad.size(), dispatch_get_global_queue(QOS_CLASS_USER_INITIATED, 0), ^(size_t i) {
+        const double* o_data = o_ptr->data.data();
+        const double* o_grad = o_ptr->grad.data();
+        dispatch_apply(o_ptr->grad.size(), dispatch_get_global_queue(QOS_CLASS_USER_INITIATED, 0), ^(size_t i) {
             double s = o_data[i];
             a_grad[i] += s * (1.0 - s) * o_grad[i];
         });
@@ -476,11 +476,11 @@ Tensor Tanh(const Tensor& a) {
     auto o_impl = out.impl;
     
     o_impl->parents = {a_impl};
-    o_impl->backward_op = [a_impl, o_impl]() {
+    o_impl->backward_op = [a_impl, o_ptr = o_impl.get()]() {
         double* a_grad = a_impl->grad.data();
-        const double* o_data = o_impl->data.data();
-        const double* o_grad = o_impl->grad.data();
-        dispatch_apply(o_impl->grad.size(), dispatch_get_global_queue(QOS_CLASS_USER_INITIATED, 0), ^(size_t i) {
+        const double* o_data = o_ptr->data.data();
+        const double* o_grad = o_ptr->grad.data();
+        dispatch_apply(o_ptr->grad.size(), dispatch_get_global_queue(QOS_CLASS_USER_INITIATED, 0), ^(size_t i) {
             double t = o_data[i];
             // To avoid race conditions, we assume single assignment or we use atomic adds if multiple parents.
             // Since backward might accumulate gradients, and we do +=, we must be careful.
@@ -516,13 +516,13 @@ Tensor Softmax(const Tensor& a) {
     auto o_impl = out.impl;
     
     o_impl->parents = {a_impl};
-    o_impl->backward_op = [a_impl, o_impl]() {
-        for (size_t r = 0; r < o_impl->rows(); ++r) {
-            for (size_t i = 0; i < o_impl->cols(); ++i) {
-                double out_i = o_impl->data[r * o_impl->cols() + i];
-                for (size_t j = 0; j < o_impl->cols(); ++j) {
-                    double out_j = o_impl->data[r * o_impl->cols() + j];
-                    double grad_j = o_impl->grad[r * o_impl->cols() + j];
+    o_impl->backward_op = [a_impl, o_ptr = o_impl.get()]() {
+        for (size_t r = 0; r < o_ptr->rows(); ++r) {
+            for (size_t i = 0; i < o_ptr->cols(); ++i) {
+                double out_i = o_ptr->data[r * o_ptr->cols() + i];
+                for (size_t j = 0; j < o_ptr->cols(); ++j) {
+                    double out_j = o_ptr->data[r * o_ptr->cols() + j];
+                    double grad_j = o_ptr->grad[r * o_ptr->cols() + j];
                     if (i == j) {
                         a_impl->grad[r * a_impl->cols() + i] += out_i * (1.0 - out_i) * grad_j;
                     } else {
@@ -568,20 +568,20 @@ Tensor LayerNorm(const Tensor& a) {
     auto o_impl = out.impl;
     
     o_impl->parents = {a_impl};
-    o_impl->backward_op = [a_impl, o_impl, means, inv_std]() {
+    o_impl->backward_op = [a_impl, o_ptr = o_impl.get(), means, inv_std]() {
         size_t N = a_impl->cols();
         for (size_t r = 0; r < a_impl->rows(); ++r) {
             double sum_g = 0.0;
             double sum_g_x_hat = 0.0;
             for (size_t c = 0; c < N; ++c) {
-                double g = o_impl->grad[r * N + c];
+                double g = o_ptr->grad[r * N + c];
                 double x_hat = (a_impl->data[r * N + c] - means[r]) * inv_std[r];
                 sum_g += g;
                 sum_g_x_hat += g * x_hat;
             }
             for (size_t c = 0; c < N; ++c) {
                 double x_hat = (a_impl->data[r * N + c] - means[r]) * inv_std[r];
-                double g = o_impl->grad[r * N + c];
+                double g = o_ptr->grad[r * N + c];
                 a_impl->grad[r * N + c] += (inv_std[r] / N) * (N * g - sum_g - x_hat * sum_g_x_hat);
             }
         }
@@ -601,12 +601,12 @@ Tensor Concat(const Tensor& a, const Tensor& b, int axis) {
         }
         auto a_impl = a.impl; auto b_impl = b.impl; auto o_impl = out.impl;
         o_impl->parents = {a_impl, b_impl};
-        o_impl->backward_op = [a_impl, b_impl, o_impl]() {
+        o_impl->backward_op = [a_impl, b_impl, o_ptr = o_impl.get()]() {
             for (size_t r = 0; r < a_impl->rows(); ++r) {
-                for (size_t c = 0; c < a_impl->cols(); ++c) a_impl->grad[r * a_impl->cols() + c] += o_impl->grad[r * o_impl->cols() + c];
+                for (size_t c = 0; c < a_impl->cols(); ++c) a_impl->grad[r * a_impl->cols() + c] += o_ptr->grad[r * o_ptr->cols() + c];
             }
             for (size_t r = 0; r < b_impl->rows(); ++r) {
-                for (size_t c = 0; c < b_impl->cols(); ++c) b_impl->grad[r * b_impl->cols() + c] += o_impl->grad[(r + a_impl->rows()) * o_impl->cols() + c];
+                for (size_t c = 0; c < b_impl->cols(); ++c) b_impl->grad[r * b_impl->cols() + c] += o_ptr->grad[(r + a_impl->rows()) * o_ptr->cols() + c];
             }
         };
         return out;
@@ -619,10 +619,10 @@ Tensor Concat(const Tensor& a, const Tensor& b, int axis) {
         }
         auto a_impl = a.impl; auto b_impl = b.impl; auto o_impl = out.impl;
         o_impl->parents = {a_impl, b_impl};
-        o_impl->backward_op = [a_impl, b_impl, o_impl]() {
+        o_impl->backward_op = [a_impl, b_impl, o_ptr = o_impl.get()]() {
             for (size_t r = 0; r < a_impl->rows(); ++r) {
-                for (size_t c = 0; c < a_impl->cols(); ++c) a_impl->grad[r * a_impl->cols() + c] += o_impl->grad[r * o_impl->cols() + c];
-                for (size_t c = 0; c < b_impl->cols(); ++c) b_impl->grad[r * b_impl->cols() + c] += o_impl->grad[r * o_impl->cols() + (c + a_impl->cols())];
+                for (size_t c = 0; c < a_impl->cols(); ++c) a_impl->grad[r * a_impl->cols() + c] += o_ptr->grad[r * o_ptr->cols() + c];
+                for (size_t c = 0; c < b_impl->cols(); ++c) b_impl->grad[r * b_impl->cols() + c] += o_ptr->grad[r * o_ptr->cols() + (c + a_impl->cols())];
             }
         };
         return out;
@@ -641,10 +641,10 @@ Tensor Transpose(const Tensor& a) {
     auto a_impl = a.impl;
     auto o_impl = out.impl;
     o_impl->parents = {a_impl};
-    o_impl->backward_op = [a_impl, o_impl]() {
+    o_impl->backward_op = [a_impl, o_ptr = o_impl.get()]() {
         for (size_t i = 0; i < a_impl->rows(); ++i) {
             for (size_t j = 0; j < a_impl->cols(); ++j) {
-                a_impl->grad[i * a_impl->cols() + j] += o_impl->grad[j * o_impl->cols() + i];
+                a_impl->grad[i * a_impl->cols() + j] += o_ptr->grad[j * o_ptr->cols() + i];
             }
         }
     };
@@ -754,11 +754,11 @@ Tensor Slice(const Tensor& a, size_t row_start, size_t row_end, size_t col_start
     auto o_impl = out.impl;
     
     o_impl->parents = {a_impl};
-    o_impl->backward_op = [a_impl, o_impl, row_start, new_rows, col_start, new_cols]() {
+    o_impl->backward_op = [a_impl, o_ptr = o_impl.get(), row_start, new_rows, col_start, new_cols]() {
         size_t a_cols = a_impl->cols();
         for (size_t r = 0; r < new_rows; ++r) {
             for (size_t c = 0; c < new_cols; ++c) {
-                a_impl->grad[(row_start + r) * a_cols + (col_start + c)] += o_impl->grad[r * new_cols + c];
+                a_impl->grad[(row_start + r) * a_cols + (col_start + c)] += o_ptr->grad[r * new_cols + c];
             }
         }
     };
@@ -937,7 +937,7 @@ Tensor Conv2D(const Tensor& X, const Tensor& W, int stride, int pad) {
     std::shared_ptr<TensorImpl> o_impl = out.impl;
     
     out.impl->parents = {X.impl, W.impl};
-    out.impl->backward_op = [x_impl, w_impl, o_impl, N, C, H, W_dim, K, kH, kW, outH, outW, stride, pad]() {
+    out.impl->backward_op = [x_impl, w_impl, o_ptr = o_impl.get(), N, C, H, W_dim, K, kH, kW, outH, outW, stride, pad]() {
         std::vector<double> col_data(C * kH * kW * outH * outW);
         std::vector<double> dcol(C * kH * kW * outH * outW);
         
@@ -947,7 +947,7 @@ Tensor Conv2D(const Tensor& X, const Tensor& W, int stride, int pad) {
             im2col_cpu(im_ptr, C, H, W_dim, kH, stride, pad, col_data.data());
             
             // Output gradient for this image: [K, outH * outW]
-            const double* grad_out_ptr = o_impl->grad.data() + n * (K * outH * outW);
+            const double* grad_out_ptr = o_ptr->grad.data() + n * (K * outH * outW);
             
             // W_grad = grad_out * col^T -> [K, outH*outW] * [outH*outW, C*kH*kW] -> [K, C*kH*kW]
             cblas_dgemm(CblasRowMajor, CblasNoTrans, CblasTrans,
@@ -1025,11 +1025,11 @@ Tensor MaxPool2D(const Tensor& X, int pool_size, int stride) {
     std::shared_ptr<TensorImpl> o_impl = out.impl;
     
     out.impl->parents = {X.impl};
-    out.impl->backward_op = [x_impl, o_impl, max_indices, N, C, outH, outW]() {
+    out.impl->backward_op = [x_impl, o_ptr = o_impl.get(), max_indices, N, C, outH, outW]() {
         for (int i = 0; i < N * C * outH * outW; ++i) {
             int max_idx = (*max_indices)[i];
             if (max_idx != -1) {
-                x_impl->grad[max_idx] += o_impl->grad[i];
+                x_impl->grad[max_idx] += o_ptr->grad[i];
             }
         }
     };
@@ -1067,9 +1067,9 @@ Tensor Dropout(const Tensor& X, double rate, double is_training) {
     std::shared_ptr<TensorImpl> o_impl = out.impl;
     
     out.impl->parents = {X.impl};
-    out.impl->backward_op = [x_impl, o_impl, mask]() {
+    out.impl->backward_op = [x_impl, o_ptr = o_impl.get(), mask]() {
         for (size_t i = 0; i < x_impl->grad.size(); ++i) {
-            x_impl->grad[i] += o_impl->grad[i] * (*mask)[i];
+            x_impl->grad[i] += o_ptr->grad[i] * (*mask)[i];
         }
     };
     
@@ -1138,7 +1138,7 @@ Tensor BatchNorm(const Tensor& X, const Tensor& gamma, const Tensor& beta, const
     std::shared_ptr<TensorImpl> o_impl = out.impl;
     
     out.impl->parents = {X.impl, gamma.impl, beta.impl};
-    out.impl->backward_op = [x_impl, g_impl, b_impl, o_impl, batch_mean, batch_var, x_norm, N, D, eps]() {
+    out.impl->backward_op = [x_impl, g_impl, b_impl, o_ptr = o_impl.get(), batch_mean, batch_var, x_norm, N, D, eps]() {
         for (int d = 0; d < D; ++d) {
             double dgamma = 0.0;
             double dbeta = 0.0;
@@ -1146,8 +1146,8 @@ Tensor BatchNorm(const Tensor& X, const Tensor& gamma, const Tensor& beta, const
             
             for (int n = 0; n < N; ++n) {
                 int idx = n * D + d;
-                dgamma += o_impl->grad[idx] * (*x_norm)[idx];
-                dbeta += o_impl->grad[idx];
+                dgamma += o_ptr->grad[idx] * (*x_norm)[idx];
+                dbeta += o_ptr->grad[idx];
             }
             
             g_impl->grad[d] += dgamma;
@@ -1158,14 +1158,14 @@ Tensor BatchNorm(const Tensor& X, const Tensor& gamma, const Tensor& beta, const
             
             for (int n = 0; n < N; ++n) {
                 int idx = n * D + d;
-                double dx_norm = o_impl->grad[idx] * g_impl->data[d];
+                double dx_norm = o_ptr->grad[idx] * g_impl->data[d];
                 dx_norm_sum += dx_norm;
                 dx_norm_x_sum += dx_norm * (*x_norm)[idx];
             }
             
             for (int n = 0; n < N; ++n) {
                 int idx = n * D + d;
-                double dx_norm = o_impl->grad[idx] * g_impl->data[d];
+                double dx_norm = o_ptr->grad[idx] * g_impl->data[d];
                 x_impl->grad[idx] += (inv_std / N) * (N * dx_norm - dx_norm_sum - (*x_norm)[idx] * dx_norm_x_sum);
             }
         }
@@ -1216,9 +1216,9 @@ Tensor Reshape(const Tensor& t, const std::vector<size_t>& new_shape) {
     std::shared_ptr<TensorImpl> o_impl = out.impl;
     
     out.impl->parents = {t.impl};
-    out.impl->backward_op = [t_impl, o_impl, old_size]() {
+    out.impl->backward_op = [t_impl, o_ptr = o_impl.get(), old_size]() {
         for (size_t i = 0; i < old_size; ++i) {
-            t_impl->grad[i] += o_impl->grad[i];
+            t_impl->grad[i] += o_ptr->grad[i];
         }
     };
     return out;
