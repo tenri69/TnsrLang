@@ -17,6 +17,7 @@
  */
 
 #include "MathEngine.h"
+#include "MetalEngine.h"
 #include <algorithm>
 #include <cmath>
 #include <fstream>
@@ -377,15 +378,24 @@ Tensor DotProduct(const Tensor& a, const Tensor& b) {
     
     Tensor out(a.rows(), b.cols());
     
-    // cblas_dgemm performs C = alpha * A * B + beta * C
-    // Since our data is flat row-major vector:
-    cblas_dgemm(CblasRowMajor, CblasNoTrans, CblasNoTrans, 
-                a.rows(), b.cols(), a.cols(), 
-                1.0, 
-                a.impl->data.data(), a.cols(), 
-                b.impl->data.data(), b.cols(), 
-                0.0, 
-                out.impl->data.data(), out.cols());
+    bool metal_used = false;
+    if (a.rows() * b.cols() * a.cols() > 100) { // Lowered for testing
+        if (!IsMetalAvailable()) MetalInitialize();
+        if (IsMetalAvailable()) {
+            metal_used = MetalComputeDotProduct(a.impl->data, b.impl->data, out.impl->data, a.rows(), b.cols(), a.cols(), false, false);
+        }
+    }
+    
+    if (!metal_used) {
+        // Fallback to Apple Accelerate (BLAS) CPU
+        cblas_dgemm(CblasRowMajor, CblasNoTrans, CblasNoTrans, 
+                    a.rows(), b.cols(), a.cols(), 
+                    1.0, 
+                    a.impl->data.data(), a.cols(), 
+                    b.impl->data.data(), b.cols(), 
+                    0.0, 
+                    out.impl->data.data(), out.cols());
+    }
                 
     auto a_impl = a.impl;
     auto b_impl = b.impl;
