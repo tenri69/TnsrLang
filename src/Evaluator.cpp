@@ -166,6 +166,10 @@ Evaluator::Evaluator(std::ostream& out) : out(out), environment(&globalEnv), las
     globalEnv.defineNative("DropoutLayer", [](const std::vector<Tensor>& args) {
         return Tensor(1, 2, {6.0, args[0].get(0,0)});
     });
+    globalEnv.defineNative("BatchNormLayer", [](const std::vector<Tensor>& args) {
+        if (args.empty()) throw std::runtime_error("BatchNormLayer expects 1 argument: features");
+        return Tensor(1, 2, {10.0, args[0].get(0,0)});
+    });
     globalEnv.defineNative("RNNLayer", [](const std::vector<Tensor>& args) {
         // [7.0, in_features, hidden_units]
         return Tensor(1, 3, {7.0, args[0].get(0,0), args[1].get(0,0)});
@@ -245,6 +249,16 @@ Evaluator::Evaluator(std::ostream& out) : out(out), environment(&globalEnv), las
                 }
                 out << "        X = LayerNorm(X + DotProduct(concat_heads, W_o));\n";
                 out << "    }\n";
+            } else if (type == 6.0) { // Dropout
+                out << "    X = Dropout(X, " << config.get(i, 1) << ", is_training);\n";
+            } else if (type == 10.0) { // BatchNorm
+                out << "    {\n";
+                out << "        Tensor gamma = weights[w_idx++];\n";
+                out << "        Tensor beta = weights[w_idx++];\n";
+                out << "        Tensor rm = weights[w_idx++];\n";
+                out << "        Tensor rv = weights[w_idx++];\n";
+                out << "        X = BatchNorm(X, gamma, beta, rm, rv, 0.1, is_training);\n";
+                out << "    }\n";
             }
         }
         out << "    return X;\n";
@@ -323,6 +337,18 @@ Evaluator::Evaluator(std::ostream& out) : out(out), environment(&globalEnv), las
                  Tensor b_h = Tensor(1, hidden * 4, std::vector<double>(hidden * 4, 0.0));
                  for (size_t k = hidden; k < hidden * 2; ++k) b_h.impl->data[k] = 1.0;
                  weights.push_back(b_h);
+             } else if (type == 10.0) { // BatchNormLayer
+                 size_t features = config.get(i, 1);
+                 
+                 Tensor gamma = Tensor(1, features, std::vector<double>(features, 1.0));
+                 Tensor beta = Tensor(1, features, std::vector<double>(features, 0.0));
+                 Tensor running_mean = Tensor(1, features, std::vector<double>(features, 0.0));
+                 Tensor running_var = Tensor(1, features, std::vector<double>(features, 1.0));
+                 
+                 weights.push_back(gamma);
+                 weights.push_back(beta);
+                 weights.push_back(running_mean);
+                 weights.push_back(running_var);
              } else if (type == 9.0) { // MultiHeadAttention
                  size_t embed_dim = config.get(i, 1);
                  double scale = std::sqrt(2.0 / embed_dim);
@@ -458,6 +484,12 @@ Evaluator::Evaluator(std::ostream& out) : out(out), environment(&globalEnv), las
                 
                 // Residual connection + LayerNorm
                 X = LayerNorm(X + output);
+            } else if (type == 10.0) { // BatchNormLayer
+                Tensor gamma = weights[w_idx++];
+                Tensor beta = weights[w_idx++];
+                Tensor running_mean = weights[w_idx++];
+                Tensor running_var = weights[w_idx++];
+                X = BatchNorm(X, gamma, beta, running_mean, running_var, 0.1, is_training);
             }
         }
         return X;

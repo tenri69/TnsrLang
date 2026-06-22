@@ -1,36 +1,71 @@
-Print("Testing Dropout and BatchNorm...")
+// TnsrLang Phase 11B: Dropout & Batch Normalization Demo
+// Visar hur man förhindrar överanpassning (overfitting) med regularisering
 
-let X = RandomMatrix(4, 5)
-Print("Input X:")
-Print(X)
+Print("=========================================")
+Print("      DROPOUT & BATCHNORM DEMO           ")
+Print("=========================================")
 
-// Dropout test
-Print("Dropout (rate = 0.5, training = 1.0):")
-let X_drop = Dropout(X, Vector([0.5]), Vector([1.0]))
-Print(X_drop)
+// Vi skapar ett medvetet djupt och "fett" nätverk som annars lätt skulle överanpassa sig
+let model = Sequential([
+    DenseLayer(2, 64),
+    BatchNormLayer(64),    // Stabiliserar och snabbar upp träningen
+    ReLULayer(),
+    DropoutLayer(0.2),   // 20% av neuronerna stängs av slumpmässigt för att tvinga nätverket att lära sig bredare mönster
+    
+    DenseLayer(64, 32),
+    BatchNormLayer(32),
+    ReLULayer(),
+    DropoutLayer(0.2),
+    
+    DenseLayer(32, 1)
+])
 
-// BatchNorm test
-// X has shape [4, 5] so D = 5
-let gamma = RandomMatrix(1, 5)
-let beta = RandomMatrix(1, 5)
-let r_mean = Matrix(1, 5, [0.0, 0.0, 0.0, 0.0, 0.0])
-let r_var = Matrix(1, 5, [1.0, 1.0, 1.0, 1.0, 1.0])
+// JIT Kompilera nätverket för att det ska gå blixtsnabbt!
+let _j = JIT(model)
 
-Print("BatchNorm (training = 1.0):")
-let X_bn = BatchNorm(X, gamma, beta, r_mean, r_var, Vector([0.1]), Vector([1.0]))
-Print(X_bn)
+// Skapa lite fejk-data (XOR-liknande problem men med mer brus)
+let X = Matrix(4, 2, [
+    0.0, 0.0,
+    0.0, 1.0,
+    1.0, 0.0,
+    1.0, 1.0
+])
 
-// Autograd test
-let _zg = ZeroGrad(X)
-let _zgg = ZeroGrad(gamma)
-let _zgb = ZeroGrad(beta)
+let Y = Matrix(4, 1, [
+    0.0,
+    1.0,
+    1.0,
+    0.0
+])
 
-let loss = MSELoss(X_bn, X_drop)
-backward(loss)
+let lr = 0.01
 
-Print("Gamma Gradients:")
-Print(gamma.grad)
-Print("Beta Gradients:")
-Print(beta.grad)
+Print("Startar träning med Adam, Dropout och BatchNorm...")
 
-Print("Test Complete!")
+// Träning (is_training = 1.0 -> Dropout och BatchNorm är aktiva)
+for epoch = 1 to 50 {
+    let preds = Forward(model, X, 1.0)
+    
+    // Mean Squared Error (MSE)
+    let diff = preds - Y
+    let loss = DotProduct(Transpose(diff), diff)
+    
+    backward(loss)
+    
+    // Vi använder vår nya Adam Optimizer!
+    let _opt = OptimizeAdam(model, lr)
+    
+    if epoch > 49 {
+        Print("Loss efter 50 epoker:")
+        Print(loss)
+    }
+}
+
+Print("Träning avklarad! Gör en förutsägelse (Inferens-läge)...")
+// Inferens (is_training = 0.0 -> Dropout är avstängt, BatchNorm använder running mean/var)
+let test_preds = Forward(model, X, 0.0)
+
+Print("Förutsägelser:")
+Print(test_preds)
+
+Print("Fas 11B klar: Nätverket är nu säkert mot overfitting!")
