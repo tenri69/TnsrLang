@@ -1,0 +1,81 @@
+Print("Laddar MNIST dataset...")
+let data = LoadCSV("mnist_train.csv")
+Print("Dataset laddat!")
+
+// Extrahera labels (kolumn 0) och pixlar (kolumn 1-784)
+let labels = Slice(data, 0, 4000, 0, 1)
+let X = Slice(data, 0, 4000, 1, 785)
+
+// Normalisera pixlar (0-255) till (0-1)
+let scale = Vector([0.003921568]) // 1 / 255
+let X_norm = X * scale
+
+// One-Hot koda labels (0-9)
+let Y = OneHot(labels, 10)
+
+// Initiera vikter för 2-lagers nätverk
+// Input: 784, Hidden: 64, Output: 10
+let W1 = RandomMatrix(784, 64)
+let W2 = RandomMatrix(64, 10)
+
+let lr = Vector([0.001])
+let beta1 = Vector([0.9])
+let beta2 = Vector([0.999])
+let t_step = Vector([1.0])
+
+Print("Börjar träna på 4000 bilder (Mini-Batch Gradient Descent, Adam)...")
+
+let epoch = 0
+while epoch < 10 {
+    let batch_start = Vector([0.0])
+    let batch_size = Vector([64.0])
+    let total_samples = Vector([3968.0]) // 62 * 64 to avoid slice out of bounds
+    
+    while batch_start < total_samples {
+        let batch_end = batch_start + batch_size
+        
+        let X_batch = Slice(X_norm, batch_start, batch_end, Vector([0.0]), Vector([784.0]))
+        let Y_batch = Slice(Y, batch_start, batch_end, Vector([0.0]), Vector([10.0]))
+        
+        let _zg1 = ZeroGrad(W1)
+        let _zg2 = ZeroGrad(W2)
+        
+        // Framåtpass
+        let hidden = ReLU(DotProduct(X_batch, W1))
+        let logits = DotProduct(hidden, W2)
+        
+        // Räkna ut förlust (Loss)
+        let loss = CrossEntropyLoss(logits, Y_batch)
+        
+        if epoch < 1 {
+            if batch_start < Vector([1.0]) {
+                Print("Initial Loss (Batch 0):")
+                Print(loss)
+            }
+        }
+        
+        // Bakåtpass
+        backward(loss)
+        
+        // Uppdatera vikter med Adam
+        W1 = Adam_Step(W1, lr, beta1, beta2, t_step)
+        W2 = Adam_Step(W2, lr, beta1, beta2, t_step)
+        
+        t_step = t_step + Vector([1.0])
+        batch_start = batch_start + batch_size
+    }
+    
+    epoch = epoch + Vector([1.0])
+}
+
+Print("Träning klar! Slutgiltig Loss:")
+// Ett extra framåtpass för att visa final loss
+let hidden_final = ReLU(DotProduct(X_norm, W1))
+let logits_final = DotProduct(hidden_final, W2)
+let final_loss = CrossEntropyLoss(logits_final, Y)
+Print(final_loss)
+
+Print("Sparar modellvikter...")
+Save(W1, "W1.tnsrdata")
+Save(W2, "W2.tnsrdata")
+Print("Klart!")

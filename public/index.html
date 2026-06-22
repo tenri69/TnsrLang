@@ -251,16 +251,19 @@
                 pixels.push(imgData[i]);
             }
 
-            const script = `Print("Loading weights...")
-let W1 = Load("W1.tnsrdata")
-let W2 = Load("W2.tnsrdata")
+            const script = `Print("Loading CNN weights...")
+let W1 = Load("W1_cnn.tnsrdata")
+let W2 = Load("W2_cnn.tnsrdata")
 Print("Preparing input tensor (1x784)...")
 let input = Matrix(1, 784, [${pixels.join(',')}])
 let scale = Vector([0.003921568])
 let X_norm = input * scale
 Print("Forward pass...")
-let hidden = ReLU(DotProduct(X_norm, W1))
-let logits = DotProduct(hidden, W2)
+let X_reshaped = Reshape(X_norm, Vector([1, 1, 28, 28]))
+let conv_out = ReLU(Conv2D(X_reshaped, W1))
+let pool_out = MaxPool2D(conv_out)
+let flat_out = Reshape(pool_out, Vector([1, 2704]))
+let logits = DotProduct(flat_out, W2)
 let probs = Softmax(logits)
 Print("=== PROBABILITIES ===")
 Print(probs)

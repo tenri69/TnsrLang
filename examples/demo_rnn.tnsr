@@ -1,0 +1,46 @@
+Print("RNN and LSTM Demo")
+
+let model = Sequential([
+    LSTMLayer(1, 4),
+    DenseLayer(4, 1)
+])
+
+// Sequence lengths: T = 3, Features D = 1
+// N = 2 batches
+// X shape: [N, T*D] = [2, 3]
+let X = [
+  [0.1, 0.2, 0.3],
+  [0.4, 0.5, 0.6]
+]
+
+// Y shape: [N, 1]
+// We try to predict the next number in the sequence (0.4 and 0.7)
+let Y = [
+  [0.4],
+  [0.7]
+]
+
+Print("Starting training loop...")
+
+for epoch = 1 to 10 {
+    let preds = Forward(model, X, 1.0)
+    let loss = MSELoss(preds, Y)
+    backward(loss)
+    let _opt = Optimize(model, 0.05)
+    
+    // Only print sometimes to not spam
+    if (epoch < 2) {
+        Print("Epoch 1 Loss:")
+        Print(loss)
+    }
+    if (epoch > 9) {
+        Print("Epoch 10 Loss:")
+        Print(loss)
+    }
+}
+
+Print("Final Predictions:")
+let final_preds = Forward(model, X, 0.0)
+Print(final_preds)
+Print("Expected:")
+Print(Y)

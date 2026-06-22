@@ -87,11 +87,14 @@ void ASTPrinter::visit(MatrixExpr& expr) {
     currentId = pushNode(ss.str());
 }
 
-
-
-
-
-
+void ASTPrinter::visit(ArrayExpr& expr) {
+    int id = pushNode("Array");
+    for (const auto& el : expr.elements) {
+        el->accept(*this);
+        link(id, currentId);
+    }
+    currentId = id;
+}
 void ASTPrinter::visit(CallExpr& expr) {
     currentId = pushNode("Call: " + expr.callee);
 }

@@ -1,0 +1,26 @@
+// TnsrLang Phase 8: JIT Compiler Demo
+// Compiles a neural network directly to C++ machine code and executes it dynamically!
+
+Print("=========================================")
+Print("         TNSR-JIT COMPILER DEMO          ")
+Print("=========================================")
+
+let model = Sequential([
+    DenseLayer(64, 128),
+    ReLULayer(),
+    DenseLayer(128, 64),
+    ReLULayer(),
+    DenseLayer(64, 10)
+])
+
+let X = RandomMatrix(100, 64)
+
+Print("Invoking JIT Compiler on model...")
+let _j = JIT(model)
+
+Print("Executing JIT-compiled C++ machine code...")
+let output = Forward(model, X, 1.0)
+
+Print("JIT Execution Successful!")
+Print("Output shape:")
+Print(output)

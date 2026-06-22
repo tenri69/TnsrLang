@@ -62,6 +62,13 @@ public:
     void accept(ASTVisitor& visitor) override;
 };
 
+class ArrayExpr : public Expr {
+public:
+    std::vector<std::unique_ptr<Expr>> elements;
+    ArrayExpr(std::vector<std::unique_ptr<Expr>> elements) : elements(std::move(elements)) {}
+    void accept(ASTVisitor& visitor) override;
+};
+
 class MatrixExpr : public Expr {
 public:
     size_t rows;
@@ -226,6 +233,7 @@ public:
     virtual void visit(VariableExpr& expr) = 0;
     virtual void visit(VectorExpr& expr) = 0;
     virtual void visit(MatrixExpr& expr) = 0;
+    virtual void visit(ArrayExpr& expr) = 0;
     virtual void visit(CallExpr& expr) = 0;
     virtual void visit(LoadExpr& expr) = 0;
     virtual void visit(LoadCSVExpr& expr) = 0;

@@ -66,6 +66,7 @@ private:
     std::unique_ptr<Expr> parseCall();
     std::unique_ptr<Expr> parsePrimary();
     
+    std::unique_ptr<ArrayExpr> parseArrayExpr();
     std::unique_ptr<VectorExpr> parseVectorExpr();
     std::unique_ptr<MatrixExpr> parseMatrixExpr();
     std::unique_ptr<LoadExpr> parseLoadExpr();

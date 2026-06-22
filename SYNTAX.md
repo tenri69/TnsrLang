@@ -1,6 +1,6 @@
-# TnsrLang v2.0 - Syntax Guide
+# TnsrLang v3.0 - Syntax Guide
 
-TnsrLang is a custom, dynamically typed language built specifically for tensor mathematics, neural networks, and automatic differentiation (AutoGrad). Here is a complete overview of the syntax you can use.
+TnsrLang is a custom, dynamically typed language built specifically for tensor mathematics, neural networks, and automatic differentiation (AutoGrad). This guide provides a complete overview of the syntax and the neural network API.
 
 ## 1. Variables & Data Types
 Variables are declared using the `let` keyword. 
@@ -36,79 +36,112 @@ let scaled = a * 0.5
 TnsrLang has several built-in functions optimized for neural networks. All of these support automatic differentiation!
 
 ```javascript
-// Matrix multiplication (Dot Product)
+// Matrix operations
 let prediction = DotProduct(weights, input)
-
-// Transpose a matrix or vector
 let w_T = Transpose(weights)
+let flat = Reshape(prediction, 10, 1)
 
-// Activation Functions
+// Neural Network functions
 let activated_relu = ReLU(prediction)         // max(0, x)
 let activated_sig  = Sigmoid(prediction)      // 1 / (1 + e^-x)
 let activated_soft = Softmax(prediction)      // e^x_i / sum(e^x_j)
+
+// Data manipulations
+let row_data = GetRow(input_matrix, 5)        // Fetches the 5th row
+let onehot_data = OneHot(row_data, 10)        // OneHot encoding (10 classes)
 ```
 
-## 4. Control Flow (If / Else)
-You can use `if` and `else` for conditional logic. Currently, `<` and `>` operators are supported.
+## 4. The `Sequential` Neural Network API
+TnsrLang features a powerful, high-level API similar to PyTorch or Keras for building Deep Learning models.
 
 ```javascript
-let error = 0.005
-if error < 0.01 {
-    Print("Target reached!")
-} else {
-    Print("Keep training...")
-}
+let model = Sequential([
+    DenseLayer(784, 128),
+    ReLULayer(),
+    DenseLayer(128, 64),
+    ReLULayer(),
+    DenseLayer(64, 10)
+])
+
+// You can also use advanced layers!
+let cnn = Sequential([
+    Conv2DLayer(1, 16, 3, 1),   // InChannels, OutChannels, Kernel, Stride
+    MaxPool2DLayer(2, 2),       // Kernel, Stride
+    DenseLayer(16 * 13 * 13, 10)
+])
+
+let gpt = Sequential([
+    DenseLayer(34, 64),
+    MultiHeadAttentionLayer(64, 4), // embed_dim, num_heads
+    DenseLayer(64, 34)
+])
 ```
 
-## 5. Loops (`for`)
-TnsrLang supports `for` loops with a start and end value (inclusive).
+## 5. Just-In-Time (JIT) Compiler
+TnsrLang has an advanced JIT compiler that transpiles your neural network into optimized C++ machine code at runtime for extreme performance.
 
 ```javascript
+// JIT-compiles the model and dynamically loads the machine code into RAM
+let _j = JIT(model)
+
+// Future Forward calls will execute the C++ machine code instead of the interpreter!
+let preds = Forward(model, X, 1.0)
+```
+
+## 6. Model Training & AutoGrad
+Training models in TnsrLang is done seamlessly via the built-in computational graph.
+
+```javascript
+let lr = 0.05
 for epoch = 1 to 10 {
-    Print("Training epoch:")
-    Print(epoch)
+    // 1. Forward Pass (1.0 = is_training)
+    let preds = Forward(model, X, 1.0)
+    
+    // 2. Loss Calculation
+    let loss = CrossEntropyLoss(preds, Y)
+    
+    // 3. Backward Pass (AutoGrad computes all gradients)
+    backward(loss)
+    
+    // 4. Update Weights
+    let _opt = Optimize(model, lr)
 }
 ```
 
-## 6. Functions (`fn`)
-You can encapsulate logic using custom functions with the `fn` keyword. Functions support lexical scoping and can return values using `return`.
+## 7. Control Flow & Loops
+You can use `if`, `else`, and `for` loops.
+
+```javascript
+for i = 1 to 5 {
+    if i > 3 {
+        Print("Almost done!")
+    } else {
+        Print("Keep going...")
+    }
+}
+```
+
+## 8. Functions (`fn`)
+You can encapsulate logic using custom functions with the `fn` keyword. Functions support lexical scoping and can return values.
 
 ```javascript
 fn forward_pass(w, x) {
     let raw = DotProduct(w, x)
     return Sigmoid(raw)
 }
-
-let result = forward_pass(weights, input)
 ```
 
-## 7. Automatic Differentiation (AutoGrad)
-TnsrLang builds a computational graph behind the scenes. You can compute the gradient of any scalar loss with respect to all its parent variables using the `backward()` function.
+## 9. I/O & Persistence
+You can load datasets and save/load model weights.
 
 ```javascript
-let loss = DotProduct(error, Transpose(error)) // Example loss calculation
-backward(loss) // Computes gradients for all tensors leading to 'loss'
+// Load a CSV file into a Matrix Tensor
+let dataset = LoadCSV("data/mnist_train.csv")
 
-// Note: In the current version, .grad values are used internally.
+// Save and Load weights
+Save(model, "weights.tnsrdata")
+let loaded_weights = Load("weights.tnsrdata")
 ```
 
-## 8. I/O (Printing & Saving)
-You can print strings and tensors to the standard output. You can also save and load tensors to the disk!
-
-```javascript
-// Printing
-Print("This is a string literal")
-Print(weights) // Prints the tensor dimensions and data
-
-// Persistence
-Save(weights, "model_weights.bin")
-let loaded_weights = Load("model_weights.bin")
-```
-
-## 9. Comments
+## 10. Comments
 Single line comments are supported using `//`.
-
-```javascript
-// This is a comment and will be ignored by the Lexer
-let x = 5 // This is also valid
-```

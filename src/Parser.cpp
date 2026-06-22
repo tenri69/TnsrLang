@@ -264,6 +264,7 @@ std::unique_ptr<Expr> Parser::parsePrimary() {
     if (match(TokenType::LOAD)) return parseLoadExpr();
     if (match(TokenType::LOAD_CSV)) return parseLoadCSVExpr();
     if (match(TokenType::IDENTIFIER)) return std::make_unique<VariableExpr>(previous().text);
+    if (match(TokenType::LBRACKET)) return parseArrayExpr();
     if (match(TokenType::LPAREN)) {
         std::unique_ptr<Expr> expr = parseExpression();
         consume(TokenType::RPAREN, "Expect ')' after expression.");
@@ -271,6 +272,18 @@ std::unique_ptr<Expr> Parser::parsePrimary() {
     }
     
     throw std::runtime_error("Unknown expression starting with: " + peek().text);
+}
+
+std::unique_ptr<ArrayExpr> Parser::parseArrayExpr() {
+    // LBRACKET was already consumed
+    std::vector<std::unique_ptr<Expr>> elements;
+    if (!check(TokenType::RBRACKET)) {
+        do {
+            elements.push_back(parseExpression());
+        } while (match(TokenType::COMMA));
+    }
+    consume(TokenType::RBRACKET, "Expect ']' to end array.");
+    return std::make_unique<ArrayExpr>(std::move(elements));
 }
 
 std::vector<double> Parser::parseNumberArray() {

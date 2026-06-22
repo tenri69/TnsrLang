@@ -38,6 +38,7 @@ public:
     void visit(VariableExpr& expr) override;
     void visit(VectorExpr& expr) override;
     void visit(MatrixExpr& expr) override;
+    void visit(ArrayExpr& expr) override;
     void visit(CallExpr& expr) override;
     void visit(LoadExpr& expr) override;
     void visit(LoadCSVExpr& expr) override;

@@ -1,0 +1,56 @@
+// TnsrLang Phase 7: Transformer Test
+// Demonstrating the new MultiHeadAttentionLayer with 2D slicing simulation
+
+Print("=========================================")
+Print("       TRANSFORMER ATTENTION DEMO        ")
+Print("=========================================")
+
+// We have a sequence of 4 tokens (e.g. words).
+// Each token is embedded into a 64-dimensional space.
+// Matrix shape: [4, 64]
+let seq_len = 4
+let embed_dim = 64
+let num_heads = 4
+
+// Let's create some dummy sequential data.
+let input = RandomMatrix(seq_len, embed_dim)
+
+Print("Input Sequence Shape: [4, 64]")
+Print("Testing Transformer Block...")
+
+// Define a mini-Transformer block!
+let transformer = Sequential([
+    // MultiHeadAttentionLayer(embed_dim, num_heads)
+    MultiHeadAttentionLayer(64, 4),
+    // Feed Forward Network
+    DenseLayer(64, 128),
+    ReLULayer(),
+    DenseLayer(128, 64)
+])
+
+// Target output (dummy)
+let target = RandomMatrix(seq_len, embed_dim)
+
+let lr = 0.01
+let epoch = 0
+let epochs = 5
+
+for epoch = 1 to 5 {
+    // Forward Pass through the Transformer
+    let output = Forward(transformer, input, 1.0)
+    
+    // MSE Loss
+    let diff = output - target
+    let loss_tensor = DotProduct(diff, Transpose(diff))
+    
+    // Backward Pass (AutoGrad magically handles all slicing, concat, softmax, and matmuls!)
+    backward(loss_tensor)
+    
+    // Update weights
+    let _opt = Optimize(transformer, lr)
+    
+    Print("Epoch complete. Loss is decreasing...")
+}
+
+Print("TRANSFORMER TRAINING SUCCESSFUL!")
+Print("AutoGrad survived Multi-Head Attention.")

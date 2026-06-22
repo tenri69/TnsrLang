@@ -36,6 +36,10 @@ struct TensorImpl {
     std::vector<double> data;
     std::vector<double> grad;
     
+    // Adam Optimizer State
+    std::vector<double> m;
+    std::vector<double> v;
+    
     size_t rows() const { return shape.size() > 0 ? shape[0] : 1; }
     size_t cols() const { return shape.size() > 1 ? shape[1] : 1; }
     
@@ -112,8 +116,18 @@ Tensor ReLU(const Tensor& a);
  * @brief Sigmoid activation function. f(x) = 1 / (1 + e^-x)
  */
 Tensor Sigmoid(const Tensor& a);
+Tensor Tanh(const Tensor& a);
 Tensor Softmax(const Tensor& a);
+Tensor LayerNorm(const Tensor& a);
 Tensor Transpose(const Tensor& a);
+Tensor Concat(const Tensor& a, const Tensor& b, int axis = 1);
+Tensor Conv2D(const Tensor& X, const Tensor& W, int stride = 1, int pad = 0);
+Tensor MaxPool2D(const Tensor& X, int pool_size = 2, int stride = 2);
+Tensor Dropout(const Tensor& X, double rate, double is_training);
+Tensor BatchNorm(const Tensor& X, const Tensor& gamma, const Tensor& beta, const Tensor& running_mean, const Tensor& running_var, double momentum, double is_training);
+
+Tensor Adam_Step(const Tensor& w, double lr, double beta1, double beta2, double t);
+Tensor Reshape(const Tensor& t, const std::vector<size_t>& new_shape);
 
 void SaveTensor(const Tensor& t, const std::string& filename);
 Tensor LoadTensor(const std::string& filename);

@@ -109,7 +109,31 @@
             background: var(--dim);
             cursor: not-allowed;
         }
+        
+        /* CodeMirror Custom Theme Overrides */
+        .CodeMirror {
+            flex: 1;
+            font-family: 'Consolas', 'Courier New', monospace;
+            font-size: 14px;
+            background: var(--bg);
+            color: var(--accent);
+            height: 100%;
+        }
+        .cm-s-tnsr-theme.CodeMirror { background: var(--bg); color: var(--fg); }
+        .cm-s-tnsr-theme .CodeMirror-cursor { border-left: 2px solid var(--accent); }
+        .cm-s-tnsr-theme .cm-keyword { color: #ff79c6; font-weight: bold; }
+        .cm-s-tnsr-theme .cm-builtin { color: #f1fa8c; font-weight: bold; }
+        .cm-s-tnsr-theme .cm-string { color: #ffb86c; }
+        .cm-s-tnsr-theme .cm-number { color: #bd93f9; }
+        .cm-s-tnsr-theme .cm-comment { color: #6272a4; font-style: italic; }
+        .cm-s-tnsr-theme .cm-operator { color: #ff79c6; }
+        .cm-s-tnsr-theme .cm-variable { color: var(--fg); }
     </style>
+    
+    <!-- CodeMirror 5 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/codemirror.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/codemirror.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/addon/mode/simple.min.js"></script>
 </head>
 <body>
     <header>
@@ -224,10 +248,40 @@ Print(predict(weights, input))
         }
 
         let animInterval = null;
+        
+        // Define TnsrLang Syntax Mode
+        CodeMirror.defineSimpleMode("tnsrlang", {
+            start: [
+                // Strings
+                {regex: /"(?:[^\\]|\\.)*?(?:"|$)/, token: "string"},
+                // Keywords
+                {regex: /(?:let|fn|return|for|while|if|else|to)\b/, token: "keyword"},
+                // Built-in functions
+                {regex: /(?:Print|Vector|Matrix|Slice|OneHot|RandomMatrix|DotProduct|Conv2D|MaxPool2D|Dropout|BatchNorm|CrossEntropyLoss|MSELoss|Adam|SGD|backward|Optimize|LoadCSV|Save|Sequential|DenseLayer|Conv2DLayer|ReLULayer|MaxPool2DLayer|FlattenLayer|DropoutLayer|RNNLayer|LSTMLayer|Forward|Sigmoid|ReLU|Tanh|Softmax)\b/, token: "builtin"},
+                // Numbers
+                {regex: /0x[a-f\d]+|[-+]?(?:\.\d+|\d+\.?\d*)(?:e[-+]?\d+)?/i, token: "number"},
+                // Comments
+                {regex: /\/\/.*/, token: "comment"},
+                // Operators
+                {regex: /[-+\/*=<>!]+/, token: "operator"},
+                // Variables/Identifiers
+                {regex: /[a-zA-Z_]\w*/, token: "variable"}
+            ]
+        });
+
+        // Initialize CodeMirror
+        window.editor = CodeMirror.fromTextArea(document.getElementById('code'), {
+            mode: "tnsrlang",
+            theme: "tnsr-theme",
+            lineNumbers: true,
+            indentUnit: 4,
+            matchBrackets: true
+        });
 
         async function runCode() {
             try {
-                const code = document.getElementById('code').value;
+                // Get code from CodeMirror
+                const code = window.editor.getValue();
                 const outputDiv = document.getElementById('output');
                 const runBtn = document.getElementById('runBtn');
                 

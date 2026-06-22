@@ -1,0 +1,53 @@
+Print("Testing Array Syntax Sugar and Sequential API...")
+
+// Array syntax sugar test
+let arr = [1.0, 2.0, 3.0]
+Print("1D Array:")
+Print(arr)
+
+let mat = [
+  [1.0, 2.0],
+  [3.0, 4.0]
+]
+Print("2D Array:")
+Print(mat)
+
+Print("Building Sequential Model...")
+let model = Sequential([
+    DenseLayer(2, 4),
+    ReLULayer(),
+    DropoutLayer(0.2),
+    DenseLayer(4, 1)
+])
+
+Print("Model ID:")
+Print(model)
+
+let X = [
+  [0.0, 0.0],
+  [0.0, 1.0],
+  [1.0, 0.0],
+  [1.0, 1.0]
+]
+
+let Y = [
+  [0.0],
+  [1.0],
+  [1.0],
+  [0.0]
+]
+
+Print("Forward pass (training = 1.0)...")
+let preds = Forward(model, X, 1.0)
+Print(preds)
+
+Print("Calculating Loss...")
+let loss = MSELoss(preds, Y)
+backward(loss)
+Print("Loss:")
+Print(loss)
+
+Print("Optimizing weights...")
+let _opt = Optimize(model, 0.1)
+
+Print("Test Complete!")

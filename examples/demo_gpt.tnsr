@@ -1,0 +1,67 @@
+// TnsrLang Phase 9: Mini-GPT (Shakespeare)
+// Trains a Language Model using Transformers and JIT Compilation
+
+Print("=========================================")
+Print("       MINI-GPT SHAKESPEARE DEMO         ")
+Print("=========================================")
+
+Print("Laddar träningsdata...")
+let X_data = LoadCSV("data/shakespeare_X.csv")
+let Y_data = LoadCSV("data/shakespeare_Y.csv")
+
+let seq_len = 8
+let vocab_size = 34
+let embed_dim = 64
+
+Print("Initierar Transformer-nätverket...")
+let gpt = Sequential([
+    // Embedding (konverterar 34 tecken till 64 dimensioner)
+    DenseLayer(34, 64),
+    
+    // Transformer Block (MultiHeadAttention)
+    MultiHeadAttentionLayer(64, 4),
+    DenseLayer(64, 128),
+    ReLULayer(),
+    DenseLayer(128, 64),
+    
+    // Output Layer (Från 64 dimensioner tillbaka till 34 möjliga tecken)
+    DenseLayer(64, 34)
+])
+
+Print("JIT-Kompilerar nätverket för extrem prestanda...")
+let _j = JIT(gpt)
+let lr = 0.05
+
+Print("Startar träning (visar endast de första 50 sekvenserna för demonstration)...")
+
+for epoch = 1 to 5 {
+    // För att spara tid under demot tränar vi bara på 50 sekvenser per epok
+    for i = 0 to 50 {
+        // Hämta en sekvens från datan
+        let x_seq = GetRow(X_data, i) // [1, 8]
+        let y_seq = GetRow(Y_data, i) // [1, 8]
+        
+        // Konvertera till One-Hot kodning (OneHot returnerar [8, 34])
+        let x_onehot = OneHot(x_seq, 34)
+        let y_onehot = OneHot(y_seq, 34)
+        
+        // Framåtpass via JIT maskinkod
+        let preds = Forward(gpt, x_onehot, 1.0) // [8, 34]
+        
+        // Beräkna loss (CrossEntropy hanterar softmax + derivata automatiskt)
+        let loss = CrossEntropyLoss(preds, y_onehot)
+        
+        // Bakåtpass
+        backward(loss)
+        
+        // Uppdatera vikter
+        let _opt = Optimize(gpt, lr)
+        
+        if (i > 48) {
+            Print("Epoch klar. Senaste Loss:")
+            Print(loss)
+        }
+    }
+}
+
+Print("Träning avklarad! AutoGrad och JIT klarade av språkinlärning.")

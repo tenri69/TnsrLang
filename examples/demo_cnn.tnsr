@@ -1,0 +1,71 @@
+Print("Laddar MNIST dataset (4000 bilder)...")
+let data = LoadCSV("mnist_train.csv")
+let labels = Slice(data, 0, 4000, 0, 1)
+let X_flat = Slice(data, 0, 4000, 1, 785)
+
+let scale = Vector([0.003921568])
+let X_norm = X_flat * scale
+let Y = OneHot(labels, 10)
+
+Print("Initierar CNN vikter...")
+// Conv2D weights: [K, C, kH, kW] -> [16, 1, 3, 3] = 16 * 9 = 144 weights
+let W1_flat = RandomMatrix(16, 9)
+let W1 = Reshape(W1_flat, Vector([16, 1, 3, 3]))
+
+// Output of Conv2D: [N, 16, 26, 26]
+// MaxPool2D (pool=2, stride=2): [N, 16, 13, 13]
+// Flatten: 16 * 13 * 13 = 2704
+// Dense layer: [2704, 10]
+let W2 = RandomMatrix(2704, 10)
+
+let lr = Vector([0.005])
+let beta1 = Vector([0.9])
+let beta2 = Vector([0.999])
+
+Print("Börjar träna med Mini-Batches och Adam...")
+
+let epoch = 0
+let t = 1
+
+while epoch < 10 {
+    let b = 0
+    
+    while b < 62 {
+        let start_idx = b * 64
+        let end_idx = start_idx + 64
+        
+        let batch_X_flat = Slice(X_norm, start_idx, end_idx, 0, 784)
+        let batch_X = Reshape(batch_X_flat, Vector([64, 1, 28, 28]))
+        let batch_Y = Slice(Y, start_idx, end_idx, 0, 10)
+        
+        let _zg1 = ZeroGrad(W1)
+        let _zg2 = ZeroGrad(W2)
+        
+        let conv_out = ReLU(Conv2D(batch_X, W1))
+        let pool_out = MaxPool2D(conv_out)
+        
+        let flat_out = Reshape(pool_out, Vector([64, 2704]))
+        let logits = DotProduct(flat_out, W2)
+        
+        let loss = CrossEntropyLoss(logits, batch_Y)
+        
+        if b < 1 {
+            Print("Loss Epoch:")
+            Print(loss)
+        }
+        
+        backward(loss)
+        
+        W1 = Adam_Step(W1, lr, beta1, beta2, t)
+        W2 = Adam_Step(W2, lr, beta1, beta2, t)
+        
+        t = t + 1
+        b = b + 1
+    }
+    
+    epoch = epoch + 1
+}
+
+Print("CNN Träning klar!")
+Save(W1, "W1_cnn.tnsrdata")
+Save(W2, "W2_cnn.tnsrdata")

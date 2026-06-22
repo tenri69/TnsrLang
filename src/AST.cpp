@@ -29,6 +29,7 @@ void NumberExpr::accept(ASTVisitor& visitor) { visitor.visit(*this); }
 void VariableExpr::accept(ASTVisitor& visitor) { visitor.visit(*this); }
 void VectorExpr::accept(ASTVisitor& visitor) { visitor.visit(*this); }
 void MatrixExpr::accept(ASTVisitor& visitor) { visitor.visit(*this); }
+void ArrayExpr::accept(ASTVisitor& visitor) { visitor.visit(*this); }
 void CallExpr::accept(ASTVisitor& visitor) { visitor.visit(*this); }
 void LoadExpr::accept(ASTVisitor& visitor) { visitor.visit(*this); }
 void BinaryExpr::accept(ASTVisitor& visitor) { visitor.visit(*this); }
