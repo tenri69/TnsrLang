@@ -27,3 +27,698 @@ src/MathEngine.cpp:960:13: warning: 'cblas_dgemm' is deprecated: first deprecate
   647 | void cblas_dgemm(const enum CBLAS_ORDER __Order,
       |      ^
 4 warnings generated.
+=========================================
+       MINI-GPT SHAKESPEARE DEMO         
+=========================================
+Laddar träningsdata...
+Initierar Transformer-nätverket...
+JIT-Kompilerar nätverket för extrem prestanda...
+[JIT] Compiling C++ model to machine code... (clang++ -shared -fPIC -std=c++17 -O3 -fobjc-arc jit_model_1.cpp src/MathEngine.cpp src/MetalEngine.mm -o ./jit_model_1.dylib -framework Accelerate -framework Metal -framework MetalPerformanceShaders -framework Foundation)
+[JIT] Model dynamically loaded and bound!
+Startar träning (Detta kommer ta en liten stund)...
+[Metal] Successfully initialized GPU: Apple M2
+Epoch klar. Senaste Loss:
+[
+  [  3.3520 ]
+]
+Epoch klar. Senaste Loss:
+[
+  [  3.4266 ]
+]
+Epoch klar. Senaste Loss:
+[
+  [  3.6095 ]
+]
+Epoch klar. Senaste Loss:
+[
+  [  3.7876 ]
+]
+Epoch klar. Senaste Loss:
+[
+  [  4.0766 ]
+]
+Epoch klar. Senaste Loss:
+[
+  [  4.0477 ]
+]
+Epoch klar. Senaste Loss:
+[
+  [  4.2305 ]
+]
+Epoch klar. Senaste Loss:
+[
+  [  3.8644 ]
+]
+Epoch klar. Senaste Loss:
+[
+  [  3.8867 ]
+]
+Epoch klar. Senaste Loss:
+[
+  [  3.9497 ]
+]
+Epoch klar. Senaste Loss:
+[
+  [  3.8497 ]
+]
+Epoch klar. Senaste Loss:
+[
+  [  3.9267 ]
+]
+Epoch klar. Senaste Loss:
+[
+  [  4.1550 ]
+]
+Epoch klar. Senaste Loss:
+[
+  [  4.2406 ]
+]
+Epoch klar. Senaste Loss:
+[
+  [  4.1933 ]
+]
+Epoch klar. Senaste Loss:
+[
+  [  4.5135 ]
+]
+Epoch klar. Senaste Loss:
+[
+  [  4.2766 ]
+]
+Epoch klar. Senaste Loss:
+[
+  [  4.3569 ]
+]
+Epoch klar. Senaste Loss:
+[
+  [  4.8618 ]
+]
+Epoch klar. Senaste Loss:
+[
+  [  4.1082 ]
+]
+Epoch klar. Senaste Loss:
+[
+  [  4.3187 ]
+]
+Epoch klar. Senaste Loss:
+[
+  [  4.4258 ]
+]
+Epoch klar. Senaste Loss:
+[
+  [  4.5258 ]
+]
+Epoch klar. Senaste Loss:
+[
+  [  4.3127 ]
+]
+Epoch klar. Senaste Loss:
+[
+  [  5.0166 ]
+]
+Epoch klar. Senaste Loss:
+[
+  [  4.5768 ]
+]
+Epoch klar. Senaste Loss:
+[
+  [  4.5198 ]
+]
+Epoch klar. Senaste Loss:
+[
+  [  4.4495 ]
+]
+Epoch klar. Senaste Loss:
+[
+  [  4.2147 ]
+]
+Epoch klar. Senaste Loss:
+[
+  [  4.1557 ]
+]
+Epoch klar. Senaste Loss:
+[
+  [  4.1040 ]
+]
+Epoch klar. Senaste Loss:
+[
+  [  3.9475 ]
+]
+Epoch klar. Senaste Loss:
+[
+  [  3.9022 ]
+]
+Epoch klar. Senaste Loss:
+[
+  [  3.9740 ]
+]
+Epoch klar. Senaste Loss:
+[
+  [  3.9330 ]
+]
+Epoch klar. Senaste Loss:
+[
+  [  3.8520 ]
+]
+Epoch klar. Senaste Loss:
+[
+  [  4.2565 ]
+]
+Epoch klar. Senaste Loss:
+[
+  [  4.3354 ]
+]
+Epoch klar. Senaste Loss:
+[
+  [  4.3677 ]
+]
+Epoch klar. Senaste Loss:
+[
+  [  4.3171 ]
+]
+Epoch klar. Senaste Loss:
+[
+  [  4.2984 ]
+]
+Epoch klar. Senaste Loss:
+[
+  [  4.3248 ]
+]
+Epoch klar. Senaste Loss:
+[
+  [  4.1235 ]
+]
+Epoch klar. Senaste Loss:
+[
+  [  4.3367 ]
+]
+Epoch klar. Senaste Loss:
+[
+  [  4.2699 ]
+]
+Epoch klar. Senaste Loss:
+[
+  [  4.2364 ]
+]
+Epoch klar. Senaste Loss:
+[
+  [  4.3181 ]
+]
+Epoch klar. Senaste Loss:
+[
+  [  4.2819 ]
+]
+Epoch klar. Senaste Loss:
+[
+  [  4.3060 ]
+]
+Epoch klar. Senaste Loss:
+[
+  [  4.2250 ]
+]
+Epoch klar. Senaste Loss:
+[
+  [  4.1493 ]
+]
+Epoch klar. Senaste Loss:
+[
+  [  4.1827 ]
+]
+Epoch klar. Senaste Loss:
+[
+  [  4.1118 ]
+]
+Epoch klar. Senaste Loss:
+[
+  [  4.4220 ]
+]
+Epoch klar. Senaste Loss:
+[
+  [  4.0507 ]
+]
+Epoch klar. Senaste Loss:
+[
+  [  4.0146 ]
+]
+Epoch klar. Senaste Loss:
+[
+  [  4.3048 ]
+]
+Epoch klar. Senaste Loss:
+[
+  [  4.3794 ]
+]
+Epoch klar. Senaste Loss:
+[
+  [  3.9299 ]
+]
+Epoch klar. Senaste Loss:
+[
+  [  4.2867 ]
+]
+Epoch klar. Senaste Loss:
+[
+  [  4.0845 ]
+]
+Epoch klar. Senaste Loss:
+[
+  [  4.1180 ]
+]
+Epoch klar. Senaste Loss:
+[
+  [  4.2076 ]
+]
+Epoch klar. Senaste Loss:
+[
+  [  4.2339 ]
+]
+Epoch klar. Senaste Loss:
+[
+  [  4.2548 ]
+]
+Epoch klar. Senaste Loss:
+[
+  [  4.2387 ]
+]
+Epoch klar. Senaste Loss:
+[
+  [  4.2458 ]
+]
+Epoch klar. Senaste Loss:
+[
+  [  4.2722 ]
+]
+Epoch klar. Senaste Loss:
+[
+  [  4.1199 ]
+]
+Epoch klar. Senaste Loss:
+[
+  [  4.1724 ]
+]
+Epoch klar. Senaste Loss:
+[
+  [  4.3062 ]
+]
+Epoch klar. Senaste Loss:
+[
+  [  4.4991 ]
+]
+Epoch klar. Senaste Loss:
+[
+  [  4.3885 ]
+]
+Epoch klar. Senaste Loss:
+[
+  [  4.1895 ]
+]
+Epoch klar. Senaste Loss:
+[
+  [  4.2223 ]
+]
+Epoch klar. Senaste Loss:
+[
+  [  4.1453 ]
+]
+Epoch klar. Senaste Loss:
+[
+  [  4.2463 ]
+]
+Epoch klar. Senaste Loss:
+[
+  [  4.5266 ]
+]
+Epoch klar. Senaste Loss:
+[
+  [  4.3605 ]
+]
+Epoch klar. Senaste Loss:
+[
+  [  4.2702 ]
+]
+Epoch klar. Senaste Loss:
+[
+  [  4.2063 ]
+]
+Epoch klar. Senaste Loss:
+[
+  [  4.1761 ]
+]
+Epoch klar. Senaste Loss:
+[
+  [  4.0421 ]
+]
+Epoch klar. Senaste Loss:
+[
+  [  4.2072 ]
+]
+Epoch klar. Senaste Loss:
+[
+  [  4.2303 ]
+]
+Epoch klar. Senaste Loss:
+[
+  [  4.1902 ]
+]
+Epoch klar. Senaste Loss:
+[
+  [  4.2772 ]
+]
+Epoch klar. Senaste Loss:
+[
+  [  4.1347 ]
+]
+Epoch klar. Senaste Loss:
+[
+  [  4.2273 ]
+]
+Epoch klar. Senaste Loss:
+[
+  [  4.2630 ]
+]
+Epoch klar. Senaste Loss:
+[
+  [  3.9969 ]
+]
+Epoch klar. Senaste Loss:
+[
+  [  4.1653 ]
+]
+Epoch klar. Senaste Loss:
+[
+  [  3.8849 ]
+]
+Epoch klar. Senaste Loss:
+[
+  [  4.1998 ]
+]
+Epoch klar. Senaste Loss:
+[
+  [  4.2806 ]
+]
+Epoch klar. Senaste Loss:
+[
+  [  4.2716 ]
+]
+Epoch klar. Senaste Loss:
+[
+  [  4.1800 ]
+]
+Epoch klar. Senaste Loss:
+[
+  [  4.1675 ]
+]
+Epoch klar. Senaste Loss:
+[
+  [  4.1145 ]
+]
+Epoch klar. Senaste Loss:
+[
+  [  4.1880 ]
+]
+Epoch klar. Senaste Loss:
+[
+  [  4.1932 ]
+]
+Epoch klar. Senaste Loss:
+[
+  [  4.1088 ]
+]
+Epoch klar. Senaste Loss:
+[
+  [  4.1133 ]
+]
+Epoch klar. Senaste Loss:
+[
+  [  4.0486 ]
+]
+Epoch klar. Senaste Loss:
+[
+  [  4.1135 ]
+]
+Epoch klar. Senaste Loss:
+[
+  [  4.0795 ]
+]
+Epoch klar. Senaste Loss:
+[
+  [  4.1895 ]
+]
+Epoch klar. Senaste Loss:
+[
+  [  4.2586 ]
+]
+Epoch klar. Senaste Loss:
+[
+  [  4.3902 ]
+]
+Epoch klar. Senaste Loss:
+[
+  [  4.3412 ]
+]
+Epoch klar. Senaste Loss:
+[
+  [  4.3010 ]
+]
+Epoch klar. Senaste Loss:
+[
+  [  4.2399 ]
+]
+Epoch klar. Senaste Loss:
+[
+  [  4.2150 ]
+]
+Epoch klar. Senaste Loss:
+[
+  [  4.0653 ]
+]
+Epoch klar. Senaste Loss:
+[
+  [  3.7766 ]
+]
+Epoch klar. Senaste Loss:
+[
+  [  3.6073 ]
+]
+Epoch klar. Senaste Loss:
+[
+  [  3.8400 ]
+]
+Epoch klar. Senaste Loss:
+[
+  [  4.0786 ]
+]
+Epoch klar. Senaste Loss:
+[
+  [  4.0392 ]
+]
+Epoch klar. Senaste Loss:
+[
+  [  4.1759 ]
+]
+Epoch klar. Senaste Loss:
+[
+  [  4.1957 ]
+]
+Epoch klar. Senaste Loss:
+[
+  [  4.1365 ]
+]
+Epoch klar. Senaste Loss:
+[
+  [  4.1830 ]
+]
+Epoch klar. Senaste Loss:
+[
+  [  4.0654 ]
+]
+Epoch klar. Senaste Loss:
+[
+  [  4.0549 ]
+]
+Epoch klar. Senaste Loss:
+[
+  [  4.0619 ]
+]
+Epoch klar. Senaste Loss:
+[
+  [  4.1638 ]
+]
+Epoch klar. Senaste Loss:
+[
+  [  4.1020 ]
+]
+Epoch klar. Senaste Loss:
+[
+  [  4.0307 ]
+]
+Epoch klar. Senaste Loss:
+[
+  [  3.9732 ]
+]
+Epoch klar. Senaste Loss:
+[
+  [  4.0851 ]
+]
+Epoch klar. Senaste Loss:
+[
+  [  4.2978 ]
+]
+Epoch klar. Senaste Loss:
+[
+  [  4.2504 ]
+]
+Epoch klar. Senaste Loss:
+[
+  [  3.8885 ]
+]
+Epoch klar. Senaste Loss:
+[
+  [  3.9109 ]
+]
+Epoch klar. Senaste Loss:
+[
+  [  4.0360 ]
+]
+Epoch klar. Senaste Loss:
+[
+  [  4.1894 ]
+]
+Epoch klar. Senaste Loss:
+[
+  [  4.2508 ]
+]
+Epoch klar. Senaste Loss:
+[
+  [  4.2230 ]
+]
+Epoch klar. Senaste Loss:
+[
+  [  4.1988 ]
+]
+Epoch klar. Senaste Loss:
+[
+  [  4.1630 ]
+]
+Epoch klar. Senaste Loss:
+[
+  [  4.0631 ]
+]
+Epoch klar. Senaste Loss:
+[
+  [  4.2876 ]
+]
+Epoch klar. Senaste Loss:
+[
+  [  4.1218 ]
+]
+Epoch klar. Senaste Loss:
+[
+  [  4.0550 ]
+]
+Epoch klar. Senaste Loss:
+[
+  [  4.0488 ]
+]
+Epoch klar. Senaste Loss:
+[
+  [  4.0039 ]
+]
+Epoch klar. Senaste Loss:
+[
+  [  4.0408 ]
+]
+Epoch klar. Senaste Loss:
+[
+  [  3.9187 ]
+]
+Epoch klar. Senaste Loss:
+[
+  [  3.9747 ]
+]
+Epoch klar. Senaste Loss:
+[
+  [  3.9697 ]
+]
+Epoch klar. Senaste Loss:
+[
+  [  4.0205 ]
+]
+Epoch klar. Senaste Loss:
+[
+  [  4.2351 ]
+]
+Epoch klar. Senaste Loss:
+[
+  [  4.1827 ]
+]
+Epoch klar. Senaste Loss:
+[
+  [  4.1176 ]
+]
+Epoch klar. Senaste Loss:
+[
+  [  4.0200 ]
+]
+Epoch klar. Senaste Loss:
+[
+  [  3.9814 ]
+]
+Epoch klar. Senaste Loss:
+[
+  [  3.9635 ]
+]
+Epoch klar. Senaste Loss:
+[
+  [  4.0234 ]
+]
+Epoch klar. Senaste Loss:
+[
+  [  4.1024 ]
+]
+Epoch klar. Senaste Loss:
+[
+  [  4.1948 ]
+]
+Epoch klar. Senaste Loss:
+[
+  [  4.0736 ]
+]
+Epoch klar. Senaste Loss:
+[
+  [  4.1760 ]
+]
+Epoch klar. Senaste Loss:
+[
+  [  4.0886 ]
+]
+Epoch klar. Senaste Loss:
+[
+  [  4.2771 ]
+]
+Epoch klar. Senaste Loss:
+[
+  [  4.1163 ]
+]
+Epoch klar. Senaste Loss:
+[
+  [  4.0607 ]
+]
+Epoch klar. Senaste Loss:
+[
+  [  4.0890 ]
+]
+Epoch klar. Senaste Loss:
+[
+  [  4.0968 ]
+]
+Epoch klar. Senaste Loss:
+[
+  [  4.1358 ]
+]
+Epoch klar. Senaste Loss:
+[
+  [  4.1928 ]
+]
+Epoch klar. Senaste L
