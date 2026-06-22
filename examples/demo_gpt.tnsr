@@ -64,4 +64,6 @@ for epoch = 1 to 5 {
     }
 }
 
-Print("Träning avklarad! AutoGrad och JIT klarade av språkinlärning.")
+Print("Träning avklarad! Låter AI:n skriva 100 tecken text...")
+let seed_sequence = GetRow(X_data, 0)
+let _gen = GenerateText(gpt, seed_sequence, 100)

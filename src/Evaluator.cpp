@@ -457,6 +457,72 @@ Evaluator::Evaluator(std::ostream& out) : out(out), environment(&globalEnv), las
         }
         return X;
     });
+    
+    globalEnv.defineNative("GenerateText", [](const std::vector<Tensor>& args) {
+        if (args.size() != 3) throw std::runtime_error("GenerateText expects 3 arguments (model_id, seed_tensor, length)");
+        
+        int model_id = args[0].get(0, 0);
+        Tensor seed = args[1]; // Should be [1, seq_len] with integer token IDs
+        int length = args[2].get(0, 0);
+        
+        std::vector<std::string> vocab;
+        std::ifstream vocab_file("data/vocab.txt");
+        if (vocab_file.is_open()) {
+            std::string line;
+            while (std::getline(vocab_file, line)) {
+                if (line == "\\n") vocab.push_back("\n");
+                else if (line == "<space>") vocab.push_back(" ");
+                else vocab.push_back(line);
+            }
+        } else {
+            std::cout << "[Warning] Could not open data/vocab.txt\n";
+        }
+        
+        size_t vocab_size = vocab.size() > 0 ? vocab.size() : 34;
+        size_t seq_len = seed.cols();
+        
+        std::vector<double> current_seq = seed.impl->data;
+        std::string generated_text = "";
+        
+        std::cout << "\nAI: \"";
+        
+        for (int i = 0; i < length; ++i) {
+            Tensor input_seq(1, seq_len, current_seq);
+            Tensor onehot = OneHot(input_seq, vocab_size);
+            
+            Tensor preds;
+            if (jit_functions.find(model_id) != jit_functions.end()) {
+                preds = jit_functions[model_id](onehot, model_weights[model_id], 0.0);
+            } else {
+                throw std::runtime_error("GenerateText currently requires JIT compiled models. Please call JIT(model) first.");
+            }
+            
+            size_t last_row = preds.rows() - 1;
+            double max_val = preds.get(last_row, 0);
+            int max_idx = 0;
+            for (size_t c = 1; c < vocab_size; ++c) {
+                double val = preds.get(last_row, c);
+                if (val > max_val) {
+                    max_val = val;
+                    max_idx = c;
+                }
+            }
+            
+            if (max_idx < vocab.size()) {
+                std::cout << vocab[max_idx];
+                std::cout.flush();
+                generated_text += vocab[max_idx];
+            } else {
+                std::cout << "?";
+            }
+            
+            current_seq.erase(current_seq.begin());
+            current_seq.push_back(max_idx);
+        }
+        
+        std::cout << "\"\n\n";
+        return Tensor(1, 1, {0.0});
+    });
 
     globalEnv.defineNative("Optimize", [](const std::vector<Tensor>& args) {
         int id = args[0].get(0, 0);
