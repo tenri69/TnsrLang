@@ -13,10 +13,5 @@ file(GLOB_RECURSE SOURCES "src/*.cpp")
 # Main executable
 add_executable(tnsrlang ${SOURCES})
 
-if (APPLE)
-    target_compile_definitions(tnsrlang PRIVATE ACCELERATE_NEW_LAPACK ACCELERATE_LAPACK_ILP64)
-    target_link_libraries(tnsrlang PRIVATE "-framework Accelerate")
-endif()
-
 # Include directory
 target_include_directories(tnsrlang PRIVATE src)

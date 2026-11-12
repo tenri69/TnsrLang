@@ -6,7 +6,7 @@ This document provides a comprehensive technical overview of **TnsrLang**'s arch
 
 ## 1. High-Level System Architecture
 
-TnsrLang is designed as an educational, transparent, and modular domain-specific language (DSL) written from scratch in C++17. The system follows a clean pipeline:
+TnsrLang is designed as an educational, transparent, and modular domain-specific language (DSL) written from scratch in pure C++17 with zero external dependencies. The system follows a clean pipeline:
 
 ```mermaid
 flowchart TD
@@ -24,7 +24,6 @@ flowchart TD
 
     subgraph MathCore["Math & AutoGrad Core"]
         NativeLib --> MathEngine["MathEngine"]
-        MathEngine --> BLAS["Apple Accelerate (CBLAS)"]
         MathEngine --> DAG["AutoGrad Computational Graph (DAG)"]
         DAG --> Backprop["Topological Sort & Backward Pass"]
     end
@@ -107,10 +106,10 @@ classDiagram
   3. `parents`: Direct dependency links to the parent tensors that created it.
   4. `backward_op`: A lambda function storing the exact local derivative.
 
-### Hardware Acceleration (Apple Accelerate BLAS)
-For matrix-matrix multiplication (`DotProduct`), TnsrLang invokes Apple's native `cblas_dgemm` routine:
-$$\mathbf{C} = \alpha \mathbf{A} \mathbf{B} + \beta \mathbf{C}$$
-This leverages vector registers (SIMD) on Apple Silicon, delivering hardware-level performance while keeping the core C++ codebase clean.
+### Matrix Operations
+Matrix multiplication (`DotProduct`) is implemented directly in standard C++ with cache-friendly loop ordering, guaranteeing pure portability across all operating systems without platform-specific dependencies:
+
+$$\mathbf{C}_{i, j} = \sum_{k} \mathbf{A}_{i, k} \mathbf{B}_{k, j}$$
 
 ---
 
@@ -190,4 +189,4 @@ sequenceDiagram
     Browser->>Browser: Update UI prediction bars & ASCII display
 ```
 
-The web server allows live experimentation without external dependencies like Node.js or Python.
+The web server allows live experimentation without external runtime dependencies like Node.js or Python.

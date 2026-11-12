@@ -10,13 +10,13 @@
 ```
 
 ![C++](https://img.shields.io/badge/C++-17-blue.svg)
+![Dependencies](https://img.shields.io/badge/Dependencies-Zero-brightgreen.svg)
+![Platform](https://img.shields.io/badge/Platform-Cross--Platform-lightgrey.svg)
 ![License](https://img.shields.io/badge/License-MIT-green.svg)
-![Build](https://img.shields.io/badge/Build-Passing-brightgreen.svg)
-![Hardware](https://img.shields.io/badge/Accelerate-BLAS%20Active-orange.svg)
 
-**TnsrLang** is a lightweight, dynamically typed Domain-Specific Language (DSL) and interpreter written from scratch in C++17. It is designed for tensor mathematics, neural networks, and automatic differentiation (AutoGrad).
+**TnsrLang** is a lightweight, dynamically typed Domain-Specific Language (DSL) and interpreter written completely from scratch in standard C++17. It is designed for tensor mathematics, neural networks, and automatic differentiation (AutoGrad).
 
-Instead of hiding the math behind massive library abstractions, TnsrLang provides an educational, transparent, and modular "brutalist" environment where you can build, train, and visualize neural networks directly through code.
+Instead of hiding the math behind massive library abstractions or opaque GPU backends, TnsrLang provides an educational, transparent, and modular "brutalist" environment where you can build, train, and inspect neural networks directly through clean code.
 
 ---
 
@@ -24,12 +24,11 @@ Instead of hiding the math behind massive library abstractions, TnsrLang provide
 
 ```mermaid
 flowchart LR
-    Source[".tnsr Source Code"] --> Lexer["Lexer"]
+    Source[".tnsr Source Code"] --> Lexer["Lexer (Tokenizer)"]
     Lexer -->|"Tokens"| Parser["Recursive Descent Parser"]
     Parser -->|"AST"| Evaluator["Tree-Walk Evaluator"]
     Evaluator <-->|"Scopes"| Env["Environment"]
     Evaluator --> MathEngine["MathEngine (AutoGrad DAG)"]
-    MathEngine --> Accelerate["Apple Accelerate BLAS"]
     MathEngine --> Output["Execution & Gradients"]
 ```
 
@@ -39,26 +38,25 @@ For full details on the compiler, topological sort, memory management, and AutoG
 
 ## Key Features
 
-* **AutoGrad Engine**: Built-in computational graph that tracks operations. Simply call `backward(loss)` and the engine automatically computes gradients for all linked tensors via reverse topological backpropagation.
-* **BLAS-Accelerated Matrix Math**: Utilizes Apple Accelerate (`cblas_dgemm`) for high-throughput matrix multiplication.
-* **Standard Library for Neural Networks**: Native functions for `DotProduct`, `Transpose`, `ReLU`, `Sigmoid`, `Softmax`, `CrossEntropyLoss`, `OneHot`, `Slice`, and `SGD_Step`.
+* **Zero External Dependencies**: Implemented in 100% portable C++17. Compiles cleanly on Linux, macOS, and Windows without external mathematical libraries.
+* **AutoGrad Engine**: Built-in computational graph that tracks mathematical operations. Simply call `backward(loss)` and the engine computes gradients for all linked tensors via reverse topological backpropagation.
+* **Standard Library for Neural Networks**: Built-in native functions for `DotProduct`, `Transpose`, `ReLU`, `Sigmoid`, `Softmax`, `CrossEntropyLoss`, `OneHot`, `Slice`, and `SGD_Step`.
 * **Dynamic Lexical Scoping**: Full support for custom functions (`fn`), `while` loops, `for` loops, and conditionals (`if`/`else`).
 * **Integrated Web Terminal & Canvas**: An embedded C++ HTTP server (`httplib`) that hosts an interactive browser terminal and an interactive 28x28 drawing canvas for real-time MNIST digit classification.
-* **Persistence**: Native `Save()` and `Load()` capabilities to store and restore trained weights.
+* **Model Persistence**: Native `Save()` and `Load()` capabilities to store and restore trained weights to disk.
 
 ---
 
 ## Quickstart
 
 ### Prerequisites
-* A C++17 compatible compiler (`clang++` or `g++`).
-* macOS (Apple Accelerate framework) or standard UNIX-like system.
+* Any standard C++17 compatible compiler (`clang++` or `g++`).
 
 ### Build
 
-Using `clang++` directly:
+Using `clang++` or `g++`:
 ```bash
-clang++ -std=c++17 -O3 -DACCELERATE_NEW_LAPACK -DACCELERATE_LAPACK_ILP64 src/*.cpp -framework Accelerate -o tnsrlang
+clang++ -std=c++17 -O3 src/*.cpp -o tnsrlang
 ```
 
 Or using CMake:
@@ -74,7 +72,7 @@ cd ..
 ## Running Demos
 
 ### 1. XOR Neural Network
-Train a multi-layer perceptron to learn the classic non-linear XOR logic gate:
+Train a multi-layer perceptron to learn the non-linear XOR logic gate:
 ```bash
 ./tnsrlang demo_xor.tnsr
 ```
@@ -150,7 +148,7 @@ For complete syntax details, see the [Syntax Guide (SYNTAX.md)](SYNTAX.md).
 │   ├── AST.h / AST.cpp              # Syntax tree node definitions
 │   ├── ASTPrinter.h / ASTPrinter.cpp# Graphviz DOT visualization
 │   ├── Evaluator.h / Evaluator.cpp  # Tree-walk interpreter & stdlib
-│   ├── MathEngine.h / MathEngine.cpp# Tensor logic, BLAS & AutoGrad
+│   ├── MathEngine.h / MathEngine.cpp# Tensor logic, AutoGrad & matrix math
 │   ├── httplib.h                    # Embedded single-header HTTP server
 │   └── main.cpp                     # CLI entrypoint & web server
 ├── public/                          # Web UI assets & playground

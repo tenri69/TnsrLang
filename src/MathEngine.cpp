@@ -23,7 +23,6 @@
 #include <sstream>
 #include <set>
 #include <random>
-#include <Accelerate/Accelerate.h>
 
 namespace tnsr {
 
@@ -302,7 +301,7 @@ void Tensor::print_grad(std::ostream& out) const {
 
 // --- Native Math Operations ---
 // These functions are injected into the language as Native Functions.
-// They use Apple Accelerate (BLAS) for extreme performance when applicable.
+// Implemented directly in standard C++ without external dependencies.
 
 Tensor DotProduct(const Tensor& a, const Tensor& b) {
     if (a.cols() != b.rows()) {
@@ -310,17 +309,15 @@ Tensor DotProduct(const Tensor& a, const Tensor& b) {
     }
     
     Tensor out(a.rows(), b.cols());
+    for (size_t i = 0; i < a.rows(); ++i) {
+        for (size_t k = 0; k < a.cols(); ++k) {
+            double a_val = a.impl->data[i * a.cols() + k];
+            for (size_t j = 0; j < b.cols(); ++j) {
+                out.impl->data[i * b.cols() + j] += a_val * b.impl->data[k * b.cols() + j];
+            }
+        }
+    }
     
-    // cblas_dgemm performs C = alpha * A * B + beta * C
-    // Since our data is flat row-major vector:
-    cblas_dgemm(CblasRowMajor, CblasNoTrans, CblasNoTrans, 
-                a.rows(), b.cols(), a.cols(), 
-                1.0, 
-                a.impl->data.data(), a.cols(), 
-                b.impl->data.data(), b.cols(), 
-                0.0, 
-                out.impl->data.data(), out.cols());
-                
     auto a_impl = a.impl;
     auto b_impl = b.impl;
     auto o_impl = out.impl;
