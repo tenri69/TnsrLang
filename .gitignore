@@ -1,4 +1,12 @@
 tnsrlang
+tnsrlang.dSYM
 .DS_Store
 __pycache__/
 *.o
+*.dylib
+*.so
+build/
+*.weights
+*.png
+training_output.txt
+

@@ -67,10 +67,10 @@ Tensor Tensor::operator+(const Tensor& other) const {
         }
         auto a = impl; auto b = other.impl; auto o = out.impl;
         o->parents = {a, b};
-        o->backward_op = [a, b, o]() {
-            for (size_t i = 0; i < o->grad.size(); ++i) {
-                a->grad[i] += o->grad[i];
-                b->grad[i] += o->grad[i];
+        o->backward_op = [a, b, o_ptr = o.get()]() {
+            for (size_t i = 0; i < o_ptr->grad.size(); ++i) {
+                a->grad[i] += o_ptr->grad[i];
+                b->grad[i] += o_ptr->grad[i];
             }
         };
         return out;
@@ -84,11 +84,11 @@ Tensor Tensor::operator+(const Tensor& other) const {
         }
         auto a = impl; auto b = other.impl; auto o = out.impl;
         o->parents = {a, b};
-        o->backward_op = [a, b, o]() {
-            for (size_t r = 0; r < o->rows(); ++r) {
-                for (size_t c = 0; c < o->cols(); ++c) {
-                    a->grad[r * o->cols() + c] += o->grad[r * o->cols() + c];
-                    b->grad[c] += o->grad[r * o->cols() + c];
+        o->backward_op = [a, b, o_ptr = o.get()]() {
+            for (size_t r = 0; r < o_ptr->rows(); ++r) {
+                for (size_t c = 0; c < o_ptr->cols(); ++c) {
+                    a->grad[r * o_ptr->cols() + c] += o_ptr->grad[r * o_ptr->cols() + c];
+                    b->grad[c] += o_ptr->grad[r * o_ptr->cols() + c];
                 }
             }
         };
@@ -103,11 +103,11 @@ Tensor Tensor::operator+(const Tensor& other) const {
         }
         auto a = impl; auto b = other.impl; auto o = out.impl;
         o->parents = {a, b};
-        o->backward_op = [a, b, o]() {
-            for (size_t r = 0; r < o->rows(); ++r) {
-                for (size_t c = 0; c < o->cols(); ++c) {
-                    a->grad[r * o->cols() + c] += o->grad[r * o->cols() + c];
-                    b->grad[r] += o->grad[r * o->cols() + c];
+        o->backward_op = [a, b, o_ptr = o.get()]() {
+            for (size_t r = 0; r < o_ptr->rows(); ++r) {
+                for (size_t c = 0; c < o_ptr->cols(); ++c) {
+                    a->grad[r * o_ptr->cols() + c] += o_ptr->grad[r * o_ptr->cols() + c];
+                    b->grad[r] += o_ptr->grad[r * o_ptr->cols() + c];
                 }
             }
         };
@@ -120,10 +120,10 @@ Tensor Tensor::operator+(const Tensor& other) const {
         }
         auto a = impl; auto b = other.impl; auto o = out.impl;
         o->parents = {a, b};
-        o->backward_op = [a, b, o]() {
-            for (size_t i = 0; i < o->grad.size(); ++i) {
-                a->grad[i] += o->grad[i];
-                b->grad[0] += o->grad[i];
+        o->backward_op = [a, b, o_ptr = o.get()]() {
+            for (size_t i = 0; i < o_ptr->grad.size(); ++i) {
+                a->grad[i] += o_ptr->grad[i];
+                b->grad[0] += o_ptr->grad[i];
             }
         };
         return out;
@@ -140,10 +140,10 @@ Tensor Tensor::operator-(const Tensor& other) const {
         }
         auto a = impl; auto b = other.impl; auto o = out.impl;
         o->parents = {a, b};
-        o->backward_op = [a, b, o]() {
-            for (size_t i = 0; i < o->grad.size(); ++i) {
-                a->grad[i] += o->grad[i];
-                b->grad[i] -= o->grad[i];
+        o->backward_op = [a, b, o_ptr = o.get()]() {
+            for (size_t i = 0; i < o_ptr->grad.size(); ++i) {
+                a->grad[i] += o_ptr->grad[i];
+                b->grad[i] -= o_ptr->grad[i];
             }
         };
         return out;
@@ -157,11 +157,11 @@ Tensor Tensor::operator-(const Tensor& other) const {
         }
         auto a = impl; auto b = other.impl; auto o = out.impl;
         o->parents = {a, b};
-        o->backward_op = [a, b, o]() {
-            for (size_t r = 0; r < o->rows(); ++r) {
-                for (size_t c = 0; c < o->cols(); ++c) {
-                    a->grad[r * o->cols() + c] += o->grad[r * o->cols() + c];
-                    b->grad[c] -= o->grad[r * o->cols() + c];
+        o->backward_op = [a, b, o_ptr = o.get()]() {
+            for (size_t r = 0; r < o_ptr->rows(); ++r) {
+                for (size_t c = 0; c < o_ptr->cols(); ++c) {
+                    a->grad[r * o_ptr->cols() + c] += o_ptr->grad[r * o_ptr->cols() + c];
+                    b->grad[c] -= o_ptr->grad[r * o_ptr->cols() + c];
                 }
             }
         };
@@ -176,11 +176,11 @@ Tensor Tensor::operator-(const Tensor& other) const {
         }
         auto a = impl; auto b = other.impl; auto o = out.impl;
         o->parents = {a, b};
-        o->backward_op = [a, b, o]() {
-            for (size_t r = 0; r < o->rows(); ++r) {
-                for (size_t c = 0; c < o->cols(); ++c) {
-                    a->grad[r * o->cols() + c] += o->grad[r * o->cols() + c];
-                    b->grad[r] -= o->grad[r * o->cols() + c];
+        o->backward_op = [a, b, o_ptr = o.get()]() {
+            for (size_t r = 0; r < o_ptr->rows(); ++r) {
+                for (size_t c = 0; c < o_ptr->cols(); ++c) {
+                    a->grad[r * o_ptr->cols() + c] += o_ptr->grad[r * o_ptr->cols() + c];
+                    b->grad[r] -= o_ptr->grad[r * o_ptr->cols() + c];
                 }
             }
         };
@@ -193,10 +193,10 @@ Tensor Tensor::operator-(const Tensor& other) const {
         }
         auto a = impl; auto b = other.impl; auto o = out.impl;
         o->parents = {a, b};
-        o->backward_op = [a, b, o]() {
-            for (size_t i = 0; i < o->grad.size(); ++i) {
-                a->grad[i] += o->grad[i];
-                b->grad[0] -= o->grad[i];
+        o->backward_op = [a, b, o_ptr = o.get()]() {
+            for (size_t i = 0; i < o_ptr->grad.size(); ++i) {
+                a->grad[i] += o_ptr->grad[i];
+                b->grad[0] -= o_ptr->grad[i];
             }
         };
         return out;
@@ -219,10 +219,10 @@ Tensor Tensor::operator*(const Tensor& other) const {
     auto o = out.impl;
     
     o->parents = {a, b};
-    o->backward_op = [a, b, o]() {
-        for (size_t i = 0; i < o->grad.size(); ++i) {
-            a->grad[i] += b->data[i] * o->grad[i];
-            b->grad[i] += a->data[i] * o->grad[i];
+    o->backward_op = [a, b, o_ptr = o.get()]() {
+        for (size_t i = 0; i < o_ptr->grad.size(); ++i) {
+            a->grad[i] += b->data[i] * o_ptr->grad[i];
+            b->grad[i] += a->data[i] * o_ptr->grad[i];
         }
     };
     return out;
@@ -238,9 +238,9 @@ Tensor Tensor::operator*(double scalar) const {
     auto o = out.impl;
     
     o->parents = {a};
-    o->backward_op = [a, o, scalar]() {
-        for (size_t i = 0; i < o->grad.size(); ++i) {
-            a->grad[i] += scalar * o->grad[i];
+    o->backward_op = [a, o_ptr = o.get(), scalar]() {
+        for (size_t i = 0; i < o_ptr->grad.size(); ++i) {
+            a->grad[i] += scalar * o_ptr->grad[i];
         }
     };
     return out;
@@ -259,9 +259,9 @@ Tensor Tensor::get_row(size_t index) const {
     auto o = out.impl;
     
     o->parents = {a};
-    o->backward_op = [a, o, index]() {
-        for (size_t c = 0; c < o->cols(); ++c) {
-            a->grad[index * a->cols() + c] += o->grad[c];
+    o->backward_op = [a, o_ptr = o.get(), index]() {
+        for (size_t c = 0; c < o_ptr->cols(); ++c) {
+            a->grad[index * a->cols() + c] += o_ptr->grad[c];
         }
     };
     return out;
@@ -326,10 +326,10 @@ Tensor DotProduct(const Tensor& a, const Tensor& b) {
     auto o_impl = out.impl;
     
     o_impl->parents = {a_impl, b_impl};
-    o_impl->backward_op = [a_impl, b_impl, o_impl]() {
+    o_impl->backward_op = [a_impl, b_impl, o_ptr = o_impl.get()]() {
         for (size_t i = 0; i < a_impl->rows(); ++i) {
             for (size_t j = 0; j < b_impl->cols(); ++j) {
-                double g = o_impl->grad[i * o_impl->cols() + j];
+                double g = o_ptr->grad[i * o_ptr->cols() + j];
                 for (size_t k = 0; k < a_impl->cols(); ++k) {
                     a_impl->grad[i * a_impl->cols() + k] += g * b_impl->data[k * b_impl->cols() + j];
                     b_impl->grad[k * b_impl->cols() + j] += a_impl->data[i * a_impl->cols() + k] * g;
@@ -351,9 +351,9 @@ Tensor ReLU(const Tensor& a) {
     auto o_impl = out.impl;
     
     o_impl->parents = {a_impl};
-    o_impl->backward_op = [a_impl, o_impl]() {
-        for (size_t i = 0; i < o_impl->grad.size(); ++i) {
-            a_impl->grad[i] += (a_impl->data[i] > 0 ? 1.0 : 0.0) * o_impl->grad[i];
+    o_impl->backward_op = [a_impl, o_ptr = o_impl.get()]() {
+        for (size_t i = 0; i < o_ptr->grad.size(); ++i) {
+            a_impl->grad[i] += (a_impl->data[i] > 0 ? 1.0 : 0.0) * o_ptr->grad[i];
         }
     };
     return out;
@@ -369,10 +369,10 @@ Tensor Sigmoid(const Tensor& a) {
     auto o_impl = out.impl;
     
     o_impl->parents = {a_impl};
-    o_impl->backward_op = [a_impl, o_impl]() {
-        for (size_t i = 0; i < o_impl->grad.size(); ++i) {
-            double s = o_impl->data[i];
-            a_impl->grad[i] += s * (1.0 - s) * o_impl->grad[i];
+    o_impl->backward_op = [a_impl, o_ptr = o_impl.get()]() {
+        for (size_t i = 0; i < o_ptr->grad.size(); ++i) {
+            double s = o_ptr->data[i];
+            a_impl->grad[i] += s * (1.0 - s) * o_ptr->grad[i];
         }
     };
     return out;
@@ -400,13 +400,13 @@ Tensor Softmax(const Tensor& a) {
     auto o_impl = out.impl;
     
     o_impl->parents = {a_impl};
-    o_impl->backward_op = [a_impl, o_impl]() {
-        for (size_t r = 0; r < o_impl->rows(); ++r) {
-            for (size_t i = 0; i < o_impl->cols(); ++i) {
-                double out_i = o_impl->data[r * o_impl->cols() + i];
-                for (size_t j = 0; j < o_impl->cols(); ++j) {
-                    double out_j = o_impl->data[r * o_impl->cols() + j];
-                    double grad_j = o_impl->grad[r * o_impl->cols() + j];
+    o_impl->backward_op = [a_impl, o_ptr = o_impl.get()]() {
+        for (size_t r = 0; r < o_ptr->rows(); ++r) {
+            for (size_t i = 0; i < o_ptr->cols(); ++i) {
+                double out_i = o_ptr->data[r * o_ptr->cols() + i];
+                for (size_t j = 0; j < o_ptr->cols(); ++j) {
+                    double out_j = o_ptr->data[r * o_ptr->cols() + j];
+                    double grad_j = o_ptr->grad[r * o_ptr->cols() + j];
                     if (i == j) {
                         a_impl->grad[r * a_impl->cols() + i] += out_i * (1.0 - out_i) * grad_j;
                     } else {
@@ -430,10 +430,10 @@ Tensor Transpose(const Tensor& a) {
     auto a_impl = a.impl;
     auto o_impl = out.impl;
     o_impl->parents = {a_impl};
-    o_impl->backward_op = [a_impl, o_impl]() {
+    o_impl->backward_op = [a_impl, o_ptr = o_impl.get()]() {
         for (size_t i = 0; i < a_impl->rows(); ++i) {
             for (size_t j = 0; j < a_impl->cols(); ++j) {
-                a_impl->grad[i * a_impl->cols() + j] += o_impl->grad[j * o_impl->cols() + i];
+                a_impl->grad[i * a_impl->cols() + j] += o_ptr->grad[j * o_ptr->cols() + i];
             }
         }
     };
@@ -565,8 +565,8 @@ Tensor CrossEntropyLoss(const Tensor& logits, const Tensor& targets) {
     auto loss_impl = loss_tensor.impl;
     
     loss_impl->parents = {logits_impl};
-    loss_impl->backward_op = [logits_impl, probs, targets, N, C, loss_impl]() {
-        double upstream_grad = loss_impl->grad[0];
+    loss_impl->backward_op = [logits_impl, probs, targets, N, C, loss_ptr = loss_impl.get()]() {
+        double upstream_grad = loss_ptr->grad[0];
         for (size_t i = 0; i < N; ++i) {
             for (size_t j = 0; j < C; ++j) {
                 double diff = probs.get(i, j) - targets.get(i, j);
