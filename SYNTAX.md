@@ -54,7 +54,7 @@ TnsrLang provides built-in native C++ functions optimized for deep learning mode
 
 ### Matrix Operations
 ```javascript
-// Matrix Multiplication (CBLAS Accelerated)
+// Matrix Multiplication (Dot Product)
 let logits = DotProduct(inputs, weights)
 
 // Matrix Transpose
