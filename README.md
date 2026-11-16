@@ -18,6 +18,8 @@
 
 Instead of hiding the math behind massive library abstractions or opaque GPU backends, TnsrLang provides an educational, transparent, and modular "brutalist" environment where you can build, train, and inspect neural networks directly through clean code.
 
+> **Featured Benchmark:** Check out the **[Real-World Showcase: Iris Classification (SHOWCASE.md)](SHOWCASE.md)** to see an end-to-end Multi-Layer Perceptron trained on real-world data with convergence curves, DAG diagrams, and performance benchmarks.
+
 ---
 
 ## Architecture Overview
