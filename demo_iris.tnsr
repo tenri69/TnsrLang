@@ -1,0 +1,76 @@
+Print("==========================================")
+Print("       TnsrLang Iris Classification        ")
+Print("==========================================")
+
+// 1. Läs in Iris-datasetet (150 rader: 1 kolumn label, 4 kolumner mätvärden)
+Print("Laddar iris.csv...")
+let dataset = LoadCSV("iris.csv")
+Print("Dataset laddat! (150 prover, 4 features)")
+
+// 2. Dela upp i Träningsdata (120 prover) och Testdata (30 prover)
+let train_labels = Slice(dataset, 0, 120, 0, 1)
+let X_train = Slice(dataset, 0, 120, 1, 5)
+
+let test_labels = Slice(dataset, 120, 150, 0, 1)
+let X_test = Slice(dataset, 120, 150, 1, 5)
+
+// One-Hot koda etiketterna (3 klasser: Setosa=0, Versicolor=1, Virginica=2)
+let Y_train = OneHot(train_labels, 3)
+let Y_test = OneHot(test_labels, 3)
+
+// 3. Initiera ett 2-lagers neuralt nätverk:
+// Input (4) -> Hidden (16) -> Output (3 klasser)
+let W1 = RandomMatrix(4, 16)
+let W2 = RandomMatrix(16, 3)
+let lr = Vector([0.05])
+
+Print("Tränar modellen med AutoGrad och SGD (150 epoker)...")
+
+let epoch = 0
+while epoch < 150 {
+    let _ = ZeroGrad(W1)
+    let _ = ZeroGrad(W2)
+
+    // Framåtpass
+    let hidden = ReLU(DotProduct(X_train, W1))
+    let logits = DotProduct(hidden, W2)
+    let loss = CrossEntropyLoss(logits, Y_train)
+
+    if epoch < 1 {
+        Print("Initial Träningsförlust (Loss):")
+        Print(loss)
+    }
+
+    // Bakåtpass: beräknar gradienter via kedjeregeln över grafen
+    backward(loss)
+
+    // Uppdatera vikter med Stochastic Gradient Descent
+    W1 = SGD_Step(W1, lr)
+    W2 = SGD_Step(W2, lr)
+
+    epoch = epoch + 1
+}
+
+// 4. Utvärdera på osett testdata (30 prover)
+let test_hidden = ReLU(DotProduct(X_test, W1))
+let test_logits = DotProduct(test_hidden, W2)
+let test_loss = CrossEntropyLoss(test_logits, Y_test)
+
+Print("------------------------------------------")
+Print("Träning slutförd!")
+Print("Slutgiltig Testförlust på osett data (Loss):")
+Print(test_loss)
+
+// 5. Beräkna sannolikhetsfördelning (Softmax) för de första 3 testproverna
+let test_probs = Softmax(test_logits)
+Print("Exempel på predicerade sannolikheter (första 3 testblommorna):")
+Print(Slice(test_probs, 0, 3, 0, 3))
+
+Print("Faktiska etiketter (One-Hot) för samma 3 blommor:")
+Print(Slice(Y_test, 0, 3, 0, 3))
+
+// 6. Spara vikterna till binärfil
+Save(W1, "iris_W1.tnsrdata")
+Save(W2, "iris_W2.tnsrdata")
+Print("Modellvikter sparade till disk (iris_W1.tnsrdata, iris_W2.tnsrdata)!")
+Print("==========================================")

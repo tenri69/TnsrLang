@@ -83,7 +83,13 @@ Train a 2-layer neural network (784 -> 64 -> 10) on 1,000 handwritten digit samp
 ./tnsrlang demo_mnist.tnsr
 ```
 
-### 3. Interactive Web Playground & MNIST Canvas
+### 3. Fisher's Iris Flower Classification
+Train an MLP (4 -> 16 -> 3) on the canonical 150-sample Iris dataset to classify flower species with >95% accuracy (see [SHOWCASE.md](SHOWCASE.md)):
+```bash
+./tnsrlang demo_iris.tnsr
+```
+
+### 4. Interactive Web Playground & MNIST Canvas
 Launch the built-in HTTP server:
 ```bash
 ./tnsrlang --server
@@ -170,6 +176,7 @@ For complete syntax details, see the [Syntax Guide (SYNTAX.md)](SYNTAX.md).
 ## Documentation
 
 * [Architecture Deep Dive (ARCHITECTURE.md)](ARCHITECTURE.md)
+* [Real-World Showcase: Iris Classification (SHOWCASE.md)](SHOWCASE.md)
 * [Syntax Guide (SYNTAX.md)](SYNTAX.md)
 * [Core Concepts & Math Guide (CORE_CONCEPTS.md)](CORE_CONCEPTS.md)
 
