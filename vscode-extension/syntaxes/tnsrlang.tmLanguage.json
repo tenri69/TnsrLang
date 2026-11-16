@@ -39,7 +39,7 @@
             "patterns": [
                 {
                     "name": "support.function.tnsrlang",
-                    "match": "\\b(DotProduct|Sigmoid|ReLU|Softmax|Transpose|RandomMatrix|ZeroGrad|Load|Save|LoadCSV|Print|Vector|Matrix)\\b"
+                    "match": "\\b(DotProduct|Sigmoid|ReLU|Softmax|Transpose|RandomMatrix|ZeroGrad|Load|Save|LoadCSV|Print|Vector|Matrix|Slice|OneHot|CrossEntropyLoss|MSELoss|SGD_Step|GetRow)\\b"
                 }
             ]
         },

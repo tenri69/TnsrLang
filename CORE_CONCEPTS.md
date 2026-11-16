@@ -62,6 +62,9 @@ Finally, we use the gradients to update our weights, taking a small step (determ
 ```javascript
 // In concept:
 weights = weights - (weights.grad * learning_rate)
+
+// In TnsrLang:
+weights = SGD_Step(weights, learning_rate)
 ```
 
 ---
@@ -71,11 +74,11 @@ weights = weights - (weights.grad * learning_rate)
 If you are a contributor looking at the C++ code, here is how the concepts map to the implementation:
 
 1. **`Tensor` & `TensorImpl` (MathEngine.h)**
-   * To support the computational graph, `Tensor` is just a lightweight wrapper around a `std::shared_ptr<TensorImpl>`. 
-   * `TensorImpl` holds the actual `std::vector<double> data` (flattened N-D array), a `std::vector<size_t> shape`, the `std::vector<double> grad`, and a list of `std::shared_ptr<TensorImpl>` pointing to its parents.
+   * To support the computational graph, `Tensor` is a lightweight handle wrapping a `std::shared_ptr<TensorImpl>`. 
+   * `TensorImpl` holds the actual contiguous `std::vector<double> data` (flat row-major array), dimensions, accumulated `grad`, and a list of parent pointers.
 2. **`backward_op` (MathEngine.cpp)**
-   * Every math function (like `DotProduct` or `Sigmoid`) assigns a `backward_op` lambda function to the resulting tensor. This lambda contains the exact calculus derivative for that specific operation.
+   * Every math operation attaches a `backward_op` closure to the resulting tensor, computing local derivatives and accumulating upstream gradients via the chain rule. To ensure zero memory leaks, closures capture non-owning raw pointers (`o_ptr = out.impl.get()`) to avoid cyclic `shared_ptr` retention.
 3. **The Standard Library (Evaluator.cpp)**
-   * TnsrLang's compiler (Lexer/Parser) has no hardcoded knowledge of AI. Instead, AI math functions are injected into the global environment as Native C++ Functions. This decouples the language from the math engine, allowing the engine to be easily upgraded to GPU acceleration.
+   * TnsrLang's compiler (Lexer/Parser) has no hardcoded AI dependencies. Instead, math operations are registered in the global environment as Native C++ Functions, cleanly decoupling language syntax from low-level execution.
 
 Welcome to the cutting edge of brutalist neural network programming!

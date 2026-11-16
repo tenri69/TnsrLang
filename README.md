@@ -162,13 +162,16 @@ For complete syntax details, see the [Syntax Guide (SYNTAX.md)](SYNTAX.md).
 ├── public/                          # Web UI assets & playground
 │   ├── index.html                   # MNIST interactive canvas
 │   └── playground.html              # Web script editor
-├── demo_xor.tnsr                    # XOR problem training script
+├── demo_iris.tnsr                   # Fisher's Iris classification training
 ├── demo_mnist.tnsr                  # MNIST neural network training
+├── demo_xor.tnsr                    # XOR problem training script
+├── iris.csv                         # 150-sample Iris benchmark dataset
 ├── mnist_train.csv                  # 1000 MNIST training samples
 ├── xor_inputs.csv / xor_targets.csv # XOR dataset
 ├── vscode-extension/                # VS Code syntax highlighting bundle
 ├── ARCHITECTURE.md                  # Detailed architectural deep dive & diagrams
 ├── CORE_CONCEPTS.md                 # Fundamental math and neural net primer
+├── SHOWCASE.md                      # Real-world benchmark: Iris classification
 ├── SYNTAX.md                        # Complete syntax guide & examples
 └── CMakeLists.txt                   # Build configuration
 ```
