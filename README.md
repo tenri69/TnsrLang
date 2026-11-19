@@ -92,14 +92,36 @@ Train an MLP (4 -> 16 -> 3) on the canonical 150-sample Iris dataset to classify
 ```
 
 ### 4. Neural Network Debugger
-Diagnose numerical health, detect dying neurons, inspect gradient norms, and stabilize training with gradient clipping:
+
+TnsrLang includes a native Neural Network Debugger designed to detect, isolate, and remedy "silent" machine learning bugs such as dying ReLUs, vanishing/exploding gradients, and `NaN`/`Inf` numerical contamination:
+
 ```bash
+# Run continuous real-time health monitoring on any model:
+./tnsrlang --debug-nn demo_iris.tnsr
+
+# Run the dedicated debugger feature showcase:
 ./tnsrlang demo_debugger.tnsr
 ```
-You can also run any script with continuous real-time gradient monitoring:
-```bash
-./tnsrlang --debug-nn demo_iris.tnsr
+
+#### Real Diagnostic Output (Iris Classification Hidden Layer):
+```text
+============================================================
+ [NN DEBUGGER REPORT] Tensor (30 x 16)
+------------------------------------------------------------
+  Data Stats:  Min: 0.0000 | Max: 4.4560 | Mean: 0.7125 | Std: 1.0884
+  Zero/Negative Activations: 56.5%
+  Gradient:    Norm: 0.0000e+00 | Min: 0.0000e+00 | Max: 0.0000e+00
+  Status:      [OK: Tensor is numerically healthy]
+============================================================
+Hälsokontroll godkänd: Inga NaN/Inf, stabila aktiveringar!
 ```
+
+#### Debugger Primitives in TnsrLang:
+* `Diagnose(tensor)`: Prints detailed diagnostic card with min/max/mean/std, zero/negative activation ratio, and gradient $L_2$-norm.
+* `AssertHealthy(tensor)`: Stops execution immediately if any `NaN` or `Inf` values contaminate weights or activations.
+* `GradNorm(tensor)`: Computes the $L_2$-norm ($\|\nabla W\|_2$) of gradients for monitoring.
+* `DeadRatio(tensor)`: Computes the ratio ($0.0$ to $1.0$) of inactive activations to prevent dying ReLU collapse.
+* `ClipGradNorm(tensor, max_norm)`: Rescales gradients in-place when their norm exceeds `max_norm`, protecting deep models from exploding.
 
 ### 5. Interactive Web Playground & MNIST Canvas
 Launch the built-in HTTP server:

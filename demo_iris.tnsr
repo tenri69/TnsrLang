@@ -39,6 +39,8 @@ while epoch < 150 {
     if epoch < 1 {
         Print("Initial Träningsförlust (Loss):")
         Print(loss)
+        Print("Inspekterar initial modellhälsa:")
+        let _ = Diagnose(W1)
     }
 
     // Bakåtpass: beräknar gradienter via kedjeregeln över grafen
@@ -61,7 +63,15 @@ Print("Träning slutförd!")
 Print("Slutgiltig Testförlust på osett data (Loss):")
 Print(test_loss)
 
-// 5. Beräkna sannolikhetsfördelning (Softmax) för de första 3 testproverna
+// 5. Diagnostikrapport och hälsoverifiering
+Print("Diagnostikrapport för tränat dolt lager (test_hidden):")
+let _ = Diagnose(test_hidden)
+let _ = AssertHealthy(W1)
+let _ = AssertHealthy(W2)
+let _ = AssertHealthy(test_logits)
+Print("Hälsokontroll godkänd: Inga NaN/Inf, stabila aktiveringar!")
+
+// 6. Beräkna sannolikhetsfördelning (Softmax) för de första 3 testproverna
 let test_probs = Softmax(test_logits)
 Print("Exempel på predicerade sannolikheter (första 3 testblommorna):")
 Print(Slice(test_probs, 0, 3, 0, 3))
@@ -69,7 +79,7 @@ Print(Slice(test_probs, 0, 3, 0, 3))
 Print("Faktiska etiketter (One-Hot) för samma 3 blommor:")
 Print(Slice(Y_test, 0, 3, 0, 3))
 
-// 6. Spara vikterna till binärfil
+// 7. Spara vikterna till binärfil
 Save(W1, "iris_W1.tnsrdata")
 Save(W2, "iris_W2.tnsrdata")
 Print("Modellvikter sparade till disk (iris_W1.tnsrdata, iris_W2.tnsrdata)!")
