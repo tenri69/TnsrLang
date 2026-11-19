@@ -81,4 +81,19 @@ If you are a contributor looking at the C++ code, here is how the concepts map t
 3. **The Standard Library (Evaluator.cpp)**
    * TnsrLang's compiler (Lexer/Parser) has no hardcoded AI dependencies. Instead, math operations are registered in the global environment as Native C++ Functions, cleanly decoupling language syntax from low-level execution.
 
+---
+
+## 5. Neural Network Debugger & Health Diagnostics
+
+Machine learning models frequently suffer from "silent failures": exploding/vanishing gradients, dying ReLUs, or `NaN`/`Inf` numerical contamination that do not produce traditional compiler or segmentation faults.
+
+TnsrLang provides dedicated primitives to inspect, assert, and stabilize models:
+
+* **`Diagnose(tensor)`**: Prints a formatted diagnostic card including tensor dimensions, min/max/mean/std, zero/negative activation ratio (detecting dying neurons), gradient $L_2$-norm, and overall numerical health.
+* **`AssertHealthy(tensor)`**: Immediately halts execution with a detailed diagnostic trace if a tensor contains `NaN` or `Inf` in its activations or gradients, preventing corrupt values from poisoning the entire training run.
+* **`GradNorm(tensor)`**: Returns a 1x1 scalar tensor containing the $L_2$-norm ($\|\nabla W\|_2$) of the tensor's gradients.
+* **`DeadRatio(tensor)`**: Returns a scalar indicating the fraction (0.0 to 1.0) of inactive activations ($\le 0$), useful for monitoring ReLU health.
+* **`ClipGradNorm(tensor, max_norm)`**: Automatically scales gradients down if their norm exceeds `max_norm`, protecting deep models from gradient explosion.
+* **CLI Flag `--debug-nn`**: Pass `./tnsrlang --debug-nn model.tnsr` to enable continuous real-time monitoring of gradients and variable assignments across the execution graph.
+
 Welcome to the cutting edge of brutalist neural network programming!

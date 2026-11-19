@@ -91,7 +91,17 @@ Train an MLP (4 -> 16 -> 3) on the canonical 150-sample Iris dataset to classify
 ./tnsrlang demo_iris.tnsr
 ```
 
-### 4. Interactive Web Playground & MNIST Canvas
+### 4. Neural Network Debugger
+Diagnose numerical health, detect dying neurons, inspect gradient norms, and stabilize training with gradient clipping:
+```bash
+./tnsrlang demo_debugger.tnsr
+```
+You can also run any script with continuous real-time gradient monitoring:
+```bash
+./tnsrlang --debug-nn demo_iris.tnsr
+```
+
+### 5. Interactive Web Playground & MNIST Canvas
 Launch the built-in HTTP server:
 ```bash
 ./tnsrlang --server

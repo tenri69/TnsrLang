@@ -136,4 +136,37 @@ Tensor OneHot(const Tensor& labels, size_t num_classes);
  */
 Tensor CrossEntropyLoss(const Tensor& logits, const Tensor& targets);
 
+// --- Neural Network Debugger Primitives ---
+
+struct TensorHealthReport {
+    size_t rows = 0;
+    size_t cols = 0;
+    size_t total_elements = 0;
+    size_t nan_count = 0;
+    size_t inf_count = 0;
+    size_t zero_count = 0;
+    double min_val = 0.0;
+    double max_val = 0.0;
+    double mean_val = 0.0;
+    double std_val = 0.0;
+    
+    bool has_grad = false;
+    size_t grad_nan_count = 0;
+    size_t grad_inf_count = 0;
+    double grad_min = 0.0;
+    double grad_max = 0.0;
+    double grad_norm = 0.0;
+
+    bool is_healthy() const {
+        return nan_count == 0 && inf_count == 0 && grad_nan_count == 0 && grad_inf_count == 0;
+    }
+};
+
+TensorHealthReport CheckHealth(const Tensor& t);
+void PrintHealthReport(const Tensor& t, const std::string& label = "Tensor", std::ostream& out = std::cout);
+bool AssertHealthy(const Tensor& t, const std::string& label = "Tensor");
+double ComputeGradNorm(const Tensor& t);
+double ComputeDeadRatio(const Tensor& t);
+Tensor ClipGradNorm(const Tensor& t, double max_norm);
+
 } // namespace tnsr

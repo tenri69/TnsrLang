@@ -103,6 +103,9 @@ class Evaluator : public ASTVisitor {
 public:
     Evaluator(std::ostream& out = std::cout);
 
+    void setDebugNN(bool enable) { debugNN = enable; }
+    bool isDebugNN() const { return debugNN; }
+
     void evaluate(const std::vector<std::unique_ptr<Stmt>>& statements);
     void evaluate(Stmt& stmt);
     Tensor evaluate(Expr& expr);
@@ -134,6 +137,7 @@ private:
     Environment* environment;
     Environment globalEnv;
     Tensor lastValue; // Used to return values from expression visits
+    bool debugNN = false;
     
     void executeBlock(const std::vector<std::unique_ptr<Stmt>>& statements, Environment* env);
 };

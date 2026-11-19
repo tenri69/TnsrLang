@@ -185,7 +185,28 @@ let restored_W1 = Load("W1.tnsrdata")
 
 ---
 
-## 8. Complete Working Example: XOR Network
+## 8. Neural Network Debugger Primitives
+
+```javascript
+// Detailed health report (dimensions, min/max/mean/std, dead neurons, grad norm)
+let _ = Diagnose(W1)
+
+// Throw runtime error immediately if NaN or Inf are detected
+let _ = AssertHealthy(hidden)
+
+// Calculate gradient L2 norm
+let gnorm = GradNorm(W1)
+
+// Calculate ratio of zero/negative activations (0.0 to 1.0)
+let dead_ratio = DeadRatio(hidden)
+
+// Clip gradient to prevent exploding gradients (in-place)
+let _ = ClipGradNorm(W1, 1.0)
+```
+
+---
+
+## 9. Complete Working Example: XOR Network
 
 ```javascript
 let X = Matrix(4, 2, [

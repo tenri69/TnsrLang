@@ -1,0 +1,69 @@
+Print("==========================================")
+Print("       TnsrLang Neural Network Debugger   ")
+Print("==========================================")
+
+// 1. Läs in Iris-datasetet
+Print("Laddar träningsdata...")
+let dataset = LoadCSV("iris.csv")
+let X = Slice(dataset, 0, 120, 1, 5)
+let labels = Slice(dataset, 0, 120, 0, 1)
+let Y = OneHot(labels, 3)
+
+// Initiera vikter
+let W1 = RandomMatrix(4, 16)
+let W2 = RandomMatrix(16, 3)
+let lr = Vector([0.05])
+
+Print("Kör ett framåt- och bakåtpass...")
+let _ = ZeroGrad(W1)
+let _ = ZeroGrad(W2)
+
+let hidden = ReLU(DotProduct(X, W1))
+let logits = DotProduct(hidden, W2)
+let loss = CrossEntropyLoss(logits, Y)
+backward(loss)
+
+// -------------------------------------------------------------
+// Test 1: Fullständig hälsoinspektion med Diagnose()
+// -------------------------------------------------------------
+Print("1. Kör hälsoinspektion på dolda lagrets aktiveringar:")
+let _ = Diagnose(hidden)
+
+Print("2. Kör hälsoinspektion på viktmatris W1 (inkl. gradienter):")
+let _ = Diagnose(W1)
+
+// -------------------------------------------------------------
+// Test 2: Dead Neuron Ratio och Gradient Norm
+// -------------------------------------------------------------
+let dead_pct = DeadRatio(hidden) * 100.0
+Print("Andel inaktiva / döda neuroner i ReLU-lagret (%):")
+Print(dead_pct)
+
+let w1_gnorm = GradNorm(W1)
+Print("L2-norm för gradienterna i W1:")
+Print(w1_gnorm)
+
+// -------------------------------------------------------------
+// Test 3: AssertHealthy skyddar mot korrupt data
+// -------------------------------------------------------------
+Print("Verifierar att W1 och logits inte innehåller NaN eller Inf...")
+let _ = AssertHealthy(W1)
+let _ = AssertHealthy(logits)
+Print("Alla hälsokontroller passerade utan anmärkning!")
+
+// -------------------------------------------------------------
+// Test 4: Gradient Clipping (Skydd mot exploding gradients)
+// -------------------------------------------------------------
+Print("------------------------------------------")
+Print("Demonstrerar Gradient Clipping (max norm = 0.1):")
+Print("Norm före clipping:")
+Print(GradNorm(W1))
+
+let _ = ClipGradNorm(W1, 0.1)
+
+Print("Norm efter clipping:")
+Print(GradNorm(W1))
+
+Print("==========================================")
+Print("   NN Debugger Demo Slutförd med Framgång! ")
+Print("==========================================")

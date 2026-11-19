@@ -49,13 +49,29 @@ std::string executeTnsrCode(const std::string& source) {
 
 int main(int argc, char* argv[]) {
     if (argc < 2) {
-        std::cerr << "Usage: " << argv[0] << " <file.tnsr> | --server\n";
+        std::cerr << "Usage: " << argv[0] << " <file.tnsr> [--dump-ast] [--debug-nn] | --server\n";
         return 1;
     }
 
-    std::string arg1 = argv[1];
+    std::string filename = "";
+    bool dumpAst = false;
+    bool debugNN = false;
+    bool isServer = false;
 
-    if (arg1 == "--server") {
+    for (int i = 1; i < argc; ++i) {
+        std::string arg = argv[i];
+        if (arg == "--server") {
+            isServer = true;
+        } else if (arg == "--dump-ast") {
+            dumpAst = true;
+        } else if (arg == "--debug-nn") {
+            debugNN = true;
+        } else if (filename.empty() && arg[0] != '-') {
+            filename = arg;
+        }
+    }
+
+    if (isServer) {
         httplib::Server svr;
 
         auto ret = svr.set_mount_point("/", "./public");
@@ -73,14 +89,9 @@ int main(int argc, char* argv[]) {
         return 0;
     }
 
-    std::string filename = arg1;
-    bool dumpAst = false;
-
-    if (argc >= 3) {
-        std::string flag = argv[2];
-        if (flag == "--dump-ast") {
-            dumpAst = true;
-        }
+    if (filename.empty()) {
+        std::cerr << "Error: No .tnsr source file specified.\n";
+        return 1;
     }
     
     std::ifstream file(filename);
@@ -112,6 +123,10 @@ int main(int argc, char* argv[]) {
 
         // 4. Evaluation
         Evaluator evaluator(std::cout);
+        if (debugNN) {
+            evaluator.setDebugNN(true);
+            std::cout << "[TnsrLang NN Debugger] Active: Monitoring gradients and numerical health.\n";
+        }
         evaluator.evaluate(ast);
 
     } catch (const std::exception& e) {

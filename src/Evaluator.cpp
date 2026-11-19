@@ -100,6 +100,35 @@ Evaluator::Evaluator(std::ostream& out) : out(out), environment(&globalEnv), las
         std::fill(w.impl->grad.begin(), w.impl->grad.end(), 0.0);
         return w;
     });
+
+    // --- Neural Network Debugger Primitives ---
+    globalEnv.defineNative("Diagnose", [this](const std::vector<Tensor>& args) {
+        if (args.empty()) throw std::runtime_error("Diagnose expects at least 1 tensor argument");
+        PrintHealthReport(args[0], "Tensor", this->out);
+        return args[0];
+    });
+
+    globalEnv.defineNative("AssertHealthy", [](const std::vector<Tensor>& args) {
+        if (args.empty()) throw std::runtime_error("AssertHealthy expects at least 1 tensor argument");
+        AssertHealthy(args[0], "Tensor");
+        return args[0];
+    });
+
+    globalEnv.defineNative("GradNorm", [](const std::vector<Tensor>& args) {
+        if (args.size() != 1) throw std::runtime_error("GradNorm expects 1 argument");
+        return Tensor(1, 1, {ComputeGradNorm(args[0])});
+    });
+
+    globalEnv.defineNative("DeadRatio", [](const std::vector<Tensor>& args) {
+        if (args.size() != 1) throw std::runtime_error("DeadRatio expects 1 argument");
+        return Tensor(1, 1, {ComputeDeadRatio(args[0])});
+    });
+
+    globalEnv.defineNative("ClipGradNorm", [](const std::vector<Tensor>& args) {
+        if (args.size() != 2) throw std::runtime_error("ClipGradNorm expects 2 arguments: (tensor, max_norm)");
+        double max_norm = args[1].get(0, 0);
+        return ClipGradNorm(args[0], max_norm);
+    });
 }
 
 void Evaluator::evaluate(const std::vector<std::unique_ptr<Stmt>>& statements) {
@@ -233,11 +262,23 @@ void Evaluator::visit(IndexExpr& expr) {
 
 void Evaluator::visit(LetStmt& stmt) {
     Tensor value = evaluate(*stmt.initializer);
+    if (debugNN && value.impl) {
+        TensorHealthReport rep = CheckHealth(value);
+        if (!rep.is_healthy()) {
+            out << "[NN DEBUGGER ALERT] Variable '" << stmt.name << "' was initialized with NaN/Inf values!\n";
+        }
+    }
     environment->define(stmt.name, value);
 }
 
 void Evaluator::visit(AssignStmt& stmt) {
     Tensor value = evaluate(*stmt.value);
+    if (debugNN && value.impl) {
+        TensorHealthReport rep = CheckHealth(value);
+        if (!rep.is_healthy()) {
+            out << "[NN DEBUGGER ALERT] Variable '" << stmt.name << "' was assigned NaN/Inf values!\n";
+        }
+    }
     environment->define(stmt.name, value);
 }
 
@@ -293,6 +334,28 @@ void Evaluator::visit(SaveStmt& stmt) {
 void Evaluator::visit(BackwardStmt& stmt) {
     Tensor t = evaluate(*stmt.expr);
     t.backward();
+    if (debugNN) {
+        TensorHealthReport lossRep = CheckHealth(t);
+        if (!lossRep.is_healthy()) {
+            out << "[NN DEBUGGER ALERT] Loss tensor is corrupted with NaN/Inf during backward pass!\n";
+        }
+        for (const auto& pair : environment->values) {
+            const std::string& name = pair.first;
+            const Tensor& varTensor = pair.second;
+            if (varTensor.impl && !varTensor.impl->grad.empty()) {
+                double gnorm = ComputeGradNorm(varTensor);
+                if (std::isnan(gnorm) || std::isinf(gnorm)) {
+                    out << "[NN DEBUGGER ALERT] Gradient of '" << name << "' collapsed to NaN/Inf!\n";
+                } else if (gnorm > 1000.0) {
+                    out << "[NN DEBUGGER WARNING] Exploding gradient on '" << name << "' (Norm: " 
+                        << std::scientific << std::setprecision(4) << gnorm << ")\n" << std::defaultfloat;
+                } else if (gnorm > 0.0 && gnorm < 1e-7) {
+                    out << "[NN DEBUGGER WARNING] Vanishing gradient on '" << name << "' (Norm: " 
+                        << std::scientific << std::setprecision(4) << gnorm << ")\n" << std::defaultfloat;
+                }
+            }
+        }
+    }
 }
 
 } // namespace tnsr

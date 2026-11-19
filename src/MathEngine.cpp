@@ -587,4 +587,146 @@ Tensor RandomMatrix(size_t rows, size_t cols) {
     return Tensor(rows, cols, vals);
 }
 
+// --- Neural Network Debugger Primitives Implementation ---
+
+TensorHealthReport CheckHealth(const Tensor& t) {
+    TensorHealthReport report;
+    if (!t.impl) return report;
+
+    report.rows = t.rows();
+    report.cols = t.cols();
+    report.total_elements = t.impl->data.size();
+    if (report.total_elements == 0) return report;
+
+    double sum = 0.0;
+    double sum_sq = 0.0;
+    report.min_val = t.impl->data[0];
+    report.max_val = t.impl->data[0];
+
+    for (double v : t.impl->data) {
+        if (std::isnan(v)) {
+            report.nan_count++;
+        } else if (std::isinf(v)) {
+            report.inf_count++;
+        } else {
+            if (v < report.min_val) report.min_val = v;
+            if (v > report.max_val) report.max_val = v;
+            sum += v;
+            sum_sq += v * v;
+            if (v <= 0.0) report.zero_count++;
+        }
+    }
+
+    size_t valid_count = report.total_elements - report.nan_count - report.inf_count;
+    if (valid_count > 0) {
+        report.mean_val = sum / valid_count;
+        double variance = (sum_sq / valid_count) - (report.mean_val * report.mean_val);
+        report.std_val = variance > 0.0 ? std::sqrt(variance) : 0.0;
+    }
+
+    if (!t.impl->grad.empty()) {
+        report.has_grad = true;
+        double grad_sum_sq = 0.0;
+        report.grad_min = t.impl->grad[0];
+        report.grad_max = t.impl->grad[0];
+        for (double g : t.impl->grad) {
+            if (std::isnan(g)) {
+                report.grad_nan_count++;
+            } else if (std::isinf(g)) {
+                report.grad_inf_count++;
+            } else {
+                if (g < report.grad_min) report.grad_min = g;
+                if (g > report.grad_max) report.grad_max = g;
+                grad_sum_sq += g * g;
+            }
+        }
+        report.grad_norm = std::sqrt(grad_sum_sq);
+    }
+
+    return report;
+}
+
+void PrintHealthReport(const Tensor& t, const std::string& label, std::ostream& out) {
+    TensorHealthReport r = CheckHealth(t);
+    out << "============================================================\n";
+    out << " [NN DEBUGGER REPORT] " << label << " (" << r.rows << " x " << r.cols << ")\n";
+    out << "------------------------------------------------------------\n";
+    if (r.nan_count > 0 || r.inf_count > 0) {
+        out << "  [ANOMALY DETECTED] NaN elements: " << r.nan_count 
+            << " | Inf elements: " << r.inf_count << "\n";
+    }
+    out << "  Data Stats:  Min: " << std::fixed << std::setprecision(4) << r.min_val
+        << " | Max: " << r.max_val
+        << " | Mean: " << r.mean_val
+        << " | Std: " << r.std_val << "\n";
+    
+    double zero_pct = (r.total_elements > 0) ? (100.0 * r.zero_count / r.total_elements) : 0.0;
+    out << "  Zero/Negative Activations: " << std::fixed << std::setprecision(1) << zero_pct << "%";
+    if (zero_pct > 60.0) {
+        out << "  [WARNING: Potential Dying Neurons]";
+    }
+    out << "\n";
+
+    if (r.has_grad) {
+        out << "  Gradient:    Norm: " << std::scientific << std::setprecision(4) << r.grad_norm
+            << " | Min: " << r.grad_min << " | Max: " << r.grad_max;
+        if (r.grad_nan_count > 0 || r.grad_inf_count > 0) {
+            out << "  [ANOMALY: NaN/Inf in Gradients!]";
+        } else if (r.grad_norm > 1000.0) {
+            out << "  [WARNING: Exploding Gradients]";
+        } else if (r.grad_norm > 0.0 && r.grad_norm < 1e-7) {
+            out << "  [WARNING: Vanishing Gradients]";
+        }
+        out << "\n";
+    }
+
+    out << "  Status:      ";
+    if (!r.is_healthy()) {
+        out << "[CRITICAL: Numerical corruption detected]\n";
+    } else if (zero_pct > 80.0) {
+        out << "[WARNING: Severe neuron starvation / dead activations]\n";
+    } else {
+        out << "[OK: Tensor is numerically healthy]\n";
+    }
+    out << "============================================================\n" << std::defaultfloat;
+}
+
+bool AssertHealthy(const Tensor& t, const std::string& label) {
+    TensorHealthReport r = CheckHealth(t);
+    if (!r.is_healthy()) {
+        std::string err = "[NN DEBUGGER ASSERTION FAILED] " + label + " contains ";
+        if (r.nan_count > 0) err += std::to_string(r.nan_count) + " NaN elements. ";
+        if (r.inf_count > 0) err += std::to_string(r.inf_count) + " Inf elements. ";
+        if (r.grad_nan_count > 0) err += std::to_string(r.grad_nan_count) + " NaN gradients. ";
+        if (r.grad_inf_count > 0) err += std::to_string(r.grad_inf_count) + " Inf gradients. ";
+        throw std::runtime_error(err);
+    }
+    return true;
+}
+
+double ComputeGradNorm(const Tensor& t) {
+    return CheckHealth(t).grad_norm;
+}
+
+double ComputeDeadRatio(const Tensor& t) {
+    if (!t.impl || t.impl->data.empty()) return 0.0;
+    size_t count = 0;
+    for (double v : t.impl->data) {
+        if (v <= 0.0) count++;
+    }
+    return (double)count / t.impl->data.size();
+}
+
+Tensor ClipGradNorm(const Tensor& t, double max_norm) {
+    if (!t.impl || t.impl->grad.empty() || max_norm <= 0.0) return t;
+    double norm = ComputeGradNorm(t);
+    if (norm > max_norm && norm > 0.0) {
+        double scale = max_norm / norm;
+        for (double& g : t.impl->grad) {
+            g *= scale;
+        }
+    }
+    return t;
+}
+
 } // namespace tnsr
