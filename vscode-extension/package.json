@@ -2,7 +2,7 @@
     "name": "tnsrlang",
     "displayName": "TnsrLang",
     "description": "Syntax highlighting for the TnsrLang machine learning language",
-    "version": "1.0.0",
+    "version": "1.1.0",
     "publisher": "tenri69",
     "engines": {
         "vscode": "^1.60.0"
