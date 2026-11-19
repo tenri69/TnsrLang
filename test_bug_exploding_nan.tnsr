@@ -1,0 +1,58 @@
+Print("==================================================")
+Print(" TEST CASE 2: Exploding Gradients & NaN Detection ")
+Print("==================================================")
+
+let dataset = LoadCSV("iris.csv")
+let X = Slice(dataset, 0, 50, 1, 5)
+let Y = OneHot(Slice(dataset, 0, 50, 0, 1), 3)
+
+let W1 = RandomMatrix(4, 8)
+let W2 = RandomMatrix(8, 3)
+
+// Katastrofalt hög learning rate (50.0) för att framkalla gradientexplosion
+let destructive_lr = Vector([50.0])
+
+Print("Tränar med destruktiv learning rate för att framkalla explosion...")
+
+let epoch = 0
+let caught_anomaly = 0
+
+while epoch < 5 {
+    let _ = ZeroGrad(W1)
+    let _ = ZeroGrad(W2)
+
+    let h = ReLU(DotProduct(X, W1))
+    let logits = DotProduct(h, W2)
+    let loss = CrossEntropyLoss(logits, Y)
+    backward(loss)
+
+    let norm_w1 = GradNorm(W1)
+    Print("Epok gradientnorm:")
+    Print(norm_w1)
+
+    // Övervaka med debuggern om gradienten exploderar
+    if norm_w1 > 100.0 {
+        Print("[NN DEBUGGER VARNING] Gradientexplosion upptäckt!")
+        let _ = Diagnose(W1)
+        Print("Reparerar med ClipGradNorm före SGD-steget:")
+        Print("Norm före clipping:")
+        Print(GradNorm(W1))
+        let _ = ClipGradNorm(W1, 1.0)
+        Print("Norm efter ClipGradNorm(W1, 1.0):")
+        Print(GradNorm(W1))
+        caught_anomaly = 1
+        epoch = 100 // Avbryt loopen kontrollerat
+    }
+
+    if epoch < 100 {
+        W1 = SGD_Step(W1, destructive_lr)
+        W2 = SGD_Step(W2, destructive_lr)
+        epoch = epoch + 1
+    }
+}
+
+if caught_anomaly > 0 {
+    Print("[SLUTSATS] Exploderande gradient upptäckt och framgångsrikt tämjd!")
+}
+
+Print("==================================================")

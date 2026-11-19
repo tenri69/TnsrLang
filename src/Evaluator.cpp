@@ -129,6 +129,15 @@ Evaluator::Evaluator(std::ostream& out) : out(out), environment(&globalEnv), las
         double max_norm = args[1].get(0, 0);
         return ClipGradNorm(args[0], max_norm);
     });
+
+    globalEnv.defineNative("CorruptTensorNaN", [](const std::vector<Tensor>& args) {
+        if (args.empty()) throw std::runtime_error("CorruptTensorNaN expects 1 argument");
+        Tensor copy(args[0].rows(), args[0].cols(), args[0].impl->data);
+        if (!copy.impl->data.empty()) {
+            copy.impl->data[0] = std::numeric_limits<double>::quiet_NaN();
+        }
+        return copy;
+    });
 }
 
 void Evaluator::evaluate(const std::vector<std::unique_ptr<Stmt>>& statements) {

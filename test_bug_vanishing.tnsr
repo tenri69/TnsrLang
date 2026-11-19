@@ -1,0 +1,33 @@
+Print("==================================================")
+Print(" TEST CASE 4: Vanishing Gradients Detection       ")
+Print("==================================================")
+
+let dataset = LoadCSV("iris.csv")
+let X = Slice(dataset, 0, 50, 1, 5)
+let Y = OneHot(Slice(dataset, 0, 50, 0, 1), 3)
+
+// Initiera med extremt små vikter (1e-6) som orsakar vanishing gradients
+let W1 = RandomMatrix(4, 16) * 0.000001
+let W2 = RandomMatrix(16, 3) * 0.000001
+
+let _ = ZeroGrad(W1)
+let _ = ZeroGrad(W2)
+
+let hidden = Sigmoid(DotProduct(X, W1))
+let logits = DotProduct(hidden, W2)
+let loss = CrossEntropyLoss(logits, Y)
+backward(loss)
+
+Print("Inspekterar gradienter för W1:")
+let _ = Diagnose(W1)
+
+let w1_gnorm = GradNorm(W1)
+Print("L2-norm för W1:")
+Print(w1_gnorm)
+
+if w1_gnorm < 0.00001 {
+    Print("[NN DEBUGGER VARNING] Vanishing gradient bekräftad (< 1e-5)!")
+    Print("[SLUTSATS] Debuggern upptäckte att vikterna har slutat lära sig.")
+}
+
+Print("==================================================")

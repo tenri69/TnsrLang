@@ -1,0 +1,40 @@
+Print("==================================================")
+Print(" TEST CASE 1: Dying ReLU & Neuron Starvation Bug ")
+Print("==================================================")
+
+// Ladda träningsdata
+let dataset = LoadCSV("iris.csv")
+let X = Slice(dataset, 0, 10, 1, 5)
+
+// Normala slumpmässiga vikter
+let W_healthy = RandomMatrix(4, 16)
+let hidden_healthy = ReLU(DotProduct(X, W_healthy))
+
+Print("--- 1. Hälsosam körning ---")
+let dead_ratio_healthy = DeadRatio(hidden_healthy)
+Print("Andel döda neuroner i hälsosamt nätverk:")
+Print(dead_ratio_healthy)
+let _ = Diagnose(hidden_healthy)
+
+// Simulera en bugg: Felaktig bias eller destruktiv gradientuppdatering
+// som skjuter alla dolda aktiveringar under noll
+Print("--- 2. Simulerar bugg: 'Dying ReLU Collapse' ---")
+let W_broken = W_healthy - Matrix(4, 16, [
+    5.0, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0,
+    5.0, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0,
+    5.0, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0,
+    5.0, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0
+])
+
+let hidden_broken = ReLU(DotProduct(X, W_broken))
+let dead_ratio_broken = DeadRatio(hidden_broken)
+Print("Andel döda neuroner efter kollaps:")
+Print(dead_ratio_broken)
+
+Print("Diagnosrapport för det kollapsade lagret:")
+let _ = Diagnose(hidden_broken)
+
+if dead_ratio_broken > 0.99 {
+    Print("[SLUTSATS] Debuggern identifierade framgångsrikt en 100% död ReLU-kollaps!")
+}
+Print("==================================================")

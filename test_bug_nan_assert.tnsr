@@ -1,0 +1,20 @@
+Print("==================================================")
+Print(" TEST CASE 3: NaN Contamination & AssertHealthy   ")
+Print("==================================================")
+
+// Normal matris
+let W = RandomMatrix(2, 2)
+Print("1. Verifierar frisk matris:")
+let _ = AssertHealthy(W)
+Print("Frisk matris passerade AssertHealthy utan anmärkning.")
+
+Print("2. Simulerar korrupt matris som drabbats av NaN:")
+let W_nan = CorruptTensorNaN(W)
+
+Print("Kör Diagnose() på korrupt tensor:")
+let _ = Diagnose(W_nan)
+
+Print("Testar AssertHealthy() på den korrupta tensorn (bör stoppa exekveringen):")
+let _ = AssertHealthy(W_nan)
+Print("FEL: Denna rad nåddes!")
+Print("==================================================")
